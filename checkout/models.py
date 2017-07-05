@@ -28,6 +28,9 @@ class SKUType(models.Model):
 
 
 class SKU(models.Model):
+    class Meta:
+        verbose_name_plural = 'Inventory'
+
     type = models.ForeignKey(SKUType)
     model_identifier = models.CharField(
         max_length=200,
@@ -55,6 +58,7 @@ class Site(models.Model):
 
 class SiteSku(models.Model):
     class Meta:
+        verbose_name_plural = 'Site Inventory'
         unique_together = (('site', 'sku'),)
 
     site = models.ForeignKey(Site, help_text='Which site these units are being assigned to')
@@ -139,6 +143,9 @@ class Period(models.Model):
 
 
 class UsagePurpose(models.Model):
+    class Meta:
+        verbose_name_plural = 'Usage Purposes'
+
     OTHER_PURPOSE = "Other"
 
     purpose = models.CharField(max_length=100, help_text='e.g. Research (Google, Wikipedia, Wolfram Alpha etc.)')
