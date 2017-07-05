@@ -31,18 +31,18 @@ class Command(BaseCommand):
             site_name = input('Enter the name of any one site (e.g. Western Addition): ')
             sites = [Site.objects.create(name=site_name)]
 
-        superuser = superusers[0]
-        if superuser.site is None:
-            self.stdout.write("Setting superuser site to '{}'..".format(sites[0].name))
-            self.stdout.write('')
-            superuser.site = sites[0]
-            superuser.save()
+        for superuser in superusers:
+            if superuser.name is None or superuser.name == '':
+                name = input('Enter full name for superuser with email {}: '.format(superuser.email))
+                superuser.name = name
+                superuser.save()
+                self.stdout.write('')
 
-        if superuser.name is None or superuser.name == '':
-            name = input('Superuser name (e.g. Russel Gong): ')
-            superuser.name = name
-            superuser.save()
-            self.stdout.write('')
+            if superuser.site is None:
+                self.stdout.write("Setting site for {} to '{}'..".format(superuser.name, sites[0].name))
+                self.stdout.write('')
+                superuser.site = sites[0]
+                superuser.save()
 
         if Subject.objects.filter(name=Subject.ACTIVITY_SUBJECT).first() is None:
             self.stdout.write("Creating default subject '{}'..".format(Subject.ACTIVITY_SUBJECT))
