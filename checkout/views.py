@@ -354,8 +354,9 @@ def export(request):
     writer = csv.writer(response)
     writer.writerow([
         'Site', 'User', 'Teaching Team', 'Subject', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU',
-        'Purpose', 'Collaborative'])
+        'Purpose', 'Collaborative', 'Total Teams at Site'])
 
+    site_teams: Dict[Site, int] = {}
     for reservation in Reservation.objects.all():
         site: Site = reservation.site_sku.site
 
@@ -364,6 +365,9 @@ def export(request):
         for week in weeks:
             if reservation.date in week.days():
                 week_number = week.week_number
+
+        if site not in site_teams:
+            site_teams[site] = len(site.team_set.all())
 
         writer.writerow([
             site.name,
@@ -378,7 +382,8 @@ def export(request):
             reservation.site_sku.sku.type.name,
             reservation.site_sku.sku.display_name,
             reservation.purpose.purpose,
-            1 if reservation.collaborative else 0
+            1 if reservation.collaborative else 0,
+            site_teams[site]
         ])
 
     return response
