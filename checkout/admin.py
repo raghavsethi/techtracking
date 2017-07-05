@@ -61,6 +61,12 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     ordering = ('email',)
     filter_horizontal = ()
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(UserAdmin, self).get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['site'].queryset = Site.objects.filter(pk=request.user.site.pk)
+        return form
+
     def activated(self, user: User):
         return user.has_usable_password()
     activated.boolean = True
@@ -195,6 +201,12 @@ class TeamAdmin(ImportExportModelAdmin):
 
     def has_module_permission(self, request):
         return request.user.is_staff
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(TeamAdmin, self).get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['site'].queryset = Site.objects.filter(pk=request.user.site.pk)
+        return form
 
     def get_queryset(self, request):
         qs = super(TeamAdmin, self).get_queryset(request)
