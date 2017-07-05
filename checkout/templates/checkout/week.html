@@ -10,7 +10,7 @@
             &laquo; <span class="hidden-xs">Week</span> {{ previous_week.week_number }}
           </a>
         {% else %}
-          <a href="/site/{{ aimhigh_site.pk }}/week/{{ previous_week.week_number }}" role="button"
+          <a href="/site/{{ user.site.pk }}/week/{{ previous_week.week_number }}" role="button"
              class="btn btn-default btn-lg">
             &laquo; <span class="hidden-xs">Week</span> {{ previous_week.week_number }}
           </a>
@@ -27,7 +27,7 @@
             <span class="hidden-xs">Week</span> {{ next_week.week_number }} &raquo;
           </a>
         {% else %}
-          <a href="/site/{{ aimhigh_site.pk }}/week/{{ next_week.week_number }}" role="button"
+          <a href="/site/{{ user.site.pk }}/week/{{ next_week.week_number }}" role="button"
              class="btn btn-default btn-lg">
             <span class="hidden-xs">Week</span> {{ next_week.week_number }} &raquo;
           </a>

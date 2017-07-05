@@ -122,7 +122,7 @@ def render_schedule(request, site: Site, week: Week):
     next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
 
     context = {
-        "aimhigh_site": site,
+        "sites": Site.objects.all(),
         "week": week,
         "previous_week": previous_week,
         "next_week": next_week,
@@ -171,7 +171,7 @@ def reserve_request(request):
         free_units[period] = site_sku.units - used
 
     context = {
-        "aimhigh_site": site_sku.site,
+        "sites": Site.objects.all(),
         "site_sku": site_sku,
         "request_date": request_date,
         "teams": teams,
@@ -271,7 +271,7 @@ def reservations(request):
                 future_reservations.append(reservation)
 
     context = {
-        "aimhigh_site": user.site,
+        "sites": Site.objects.all(),
         "user": user,
         "past_reservations": sorted(past_reservations),
         "future_reservations": sorted(future_reservations)
@@ -306,7 +306,7 @@ def movements(request):
     next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
 
     context = {
-        "aimhigh_site": site,
+        "sites": Site.objects.all(),
         "week": week,
         "previous_week": previous_week,
         "next_week": next_week,
@@ -376,3 +376,14 @@ def export(request):
         ])
 
     return response
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def change_site(request):
+    user: User = request.user
+    site: Site = get_object_or_404(Site, pk=request.POST['site_pk'])
+
+    user.site = site
+    user.save()
+
+    return success_redirect(request, "Changed site to {}".format(site.name))

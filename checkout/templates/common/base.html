@@ -8,12 +8,7 @@
   <meta name="author" content="">
   <link rel="icon" href="../../favicon.ico">
 
-  <title>Aim High -
-    {% if aimhigh_site %}
-      {{ aimhigh_site.name }} -
-    {% endif %}
-    {% block title %} {% endblock %}
-  </title>
+  <title>Aim High - {% if user.site %} {{ user.site.name }} -{% endif %} {% block title %} {% endblock %}</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
         integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -48,7 +43,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      {% if aimhigh_site %}
+      {% if user.site %}
         <a class="navbar-brand" href="{% url 'index' %}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 165.2 109.2" width="50" height="50">
             <path fill="#ffffff"
@@ -62,7 +57,7 @@
             <path fill="#ffffff"
                   d="M80.1 2.5H67.4c-.2.7-12.7 42.6-13.1 43.9h10.5c.2-.7 3-11.9 3-11.9h11.8s3.1 11.2 3.3 11.9h10.8c-.4-1.3-13.2-43.2-13.4-43.9h-.2zm-6.6 10.1L78 26.8h-8.7l4.2-14.2z"/>
           </svg>
-          {{ aimhigh_site.name }}
+          {{ user.site.name }}
         </a>
       {% else %}
         <a class="navbar-brand" href="{% url 'index' %}">
@@ -120,7 +115,21 @@
               <li class="user-info">
                 <span class="user-info-label">Site</span>
                 <br/>
-                {{ user.site }}
+                {% if user.is_superuser %}
+                  <form class="form" action="{% url 'change_site' %}" method="post">
+                    {% csrf_token %}
+                    <select class="form-control" name="site_pk" onchange="this.form.submit()">
+                      <option value="{{ user.site.pk }}">{{ user.site.name }}</option>
+                      {% for site in sites %}
+                        {% if site != user.site %}
+                          <option value="{{ site.pk }}">{{ site.name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </form>
+                {% else %}
+                  {{ user.site }}
+                {% endif %}
               </li>
               <li role="separator" class="divider"></li>
               <li><a href="{% url 'logout' %}?next=/">Logout</a></li>
@@ -130,8 +139,6 @@
           <li><a href="{% url 'login' %}?next=/">Login</a></li>
         {% endif %}
       </ul>
-
-
     </div><!--/.nav-collapse -->
   </div>
 </nav>
