@@ -59,8 +59,7 @@ class Team(models.Model):
     team = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     def __str__(self):
-        return ([member for member in self.team.all()])[0].get_short_name()
-        # return ", ".join([member.display_name for member in self.team.all()])
+        return ", ".join([member.get_short_name() for member in self.team.all()])
 
 
 @total_ordering
