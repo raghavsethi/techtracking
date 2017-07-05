@@ -59,7 +59,8 @@ class MovementSchedule:
         for period in periods:
             movements[period] = []
 
-        for site_sku in list(site.sitesku_set.all()):
+        site_skus = list(site.sitesku_set.all())
+        for site_sku in site_skus:
             storage_location = site_sku.storage_location
 
             storage_location = Classroom(pk=0, site=site, code="DEF", name=storage_location)
@@ -77,6 +78,7 @@ class MovementSchedule:
                     remaining_units = reservation.units
                     while remaining_units > 0:
                         candidates = order_candidates(reservation, units_by_location)
+                        assert len(candidates) > 0
                         for origin, available_count in candidates:
                             moved_units = min(remaining_units, available_count)
 
@@ -100,15 +102,13 @@ class MovementSchedule:
                 for location, count in list(units_by_location.items()):
                     if location != storage_location:
                         movements[period].append(Movement(site_sku, count, location, storage_location))
-                        postmove_units_by_location[storage_location] = count
-                        del units_by_location[location]
+                    postmove_units_by_location[storage_location] += count
 
-                # Update location mappings
-                for destination, count in postmove_units_by_location.items():
-                    if destination not in units_by_location:
-                        units_by_location[destination] = 0
-
-                    units_by_location[destination] += count
+                # Update units_by_location
+                units_by_location = {}
+                for location, count in postmove_units_by_location.items():
+                    if count > 0:
+                        units_by_location[location] = count
 
         for period in movements:
             self.periods.append(PeriodMovements(period, sorted(movements[period])))
