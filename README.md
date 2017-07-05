@@ -55,9 +55,13 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 
 * [Fork this repository](https://bitbucket.org/ycoreaimhigh/techtracking/fork). This will create a copy of the source
   code on BitBucket.
-* Clone your copy of the repository into a folder of your choice (replace raghavsethi with your username)
+* Clone your copy of the repository into a folder of your choice (replace <username> with your username)
 ```commandline
-    git clone https://raghavsethi@bitbucket.org/raghavsethi/techtracking.git
+    git clone https://<username>@bitbucket.org/<username>/techtracking.git
+```
+* Create a remote pointing to the upstream copy of the repository
+```commandline
+    git remote add upstream git@bitbucket.org:ycoreaimhigh/techtracking.git
 ```
 * Change into this directory
 ```commandline
@@ -128,3 +132,23 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     deactivate
 ```
+
+## Updating your repository to match latest upstream
+```commandline
+    git pull --rebase upstream master
+```
+If you see this message:
+```commandline
+    error: cannot pull with rebase: You have unstaged changes.
+    error: please commit or stash them.
+```
+This means you have made changes to the code. If you want to save your changes:
+```commandline
+    git add --all .
+    git commit -am "<description of changes>"
+```
+If you do not want to save your changes:
+```commandline
+    git reset --hard HEAD
+```
+Now you can try rebasing again
