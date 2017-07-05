@@ -42,20 +42,26 @@ def resolve_week(user: User):
     if len(weeks) < 1:
         return None
 
-    week_number = weeks[0].week_number
     today = datetime.now().date()
 
-    # TODO: Test this logic
+    if today < weeks[0].start_date():
+        return weeks[0]
+
+    if today > weeks[-1].end_date():
+        return weeks[-1]
+
+    current_week: Week = weeks[0]
+
     for week in weeks:
         if week.start_date() <= today <= week.end_date():
-            week_number = week.week_number
+            current_week = week
             break
         if today <= week.start_date():
-            week_number = week.week_number
+            current_week = week
+            break
 
-    logger.info("[%s] Resolved current week for %s to be %s", user.email, user.site, week_number)
-
-    return user.site.week_set.filter(week_number=week_number).first()
+    logger.info("[%s] Resolved current week for %s to be %s", user.email, user.site, current_week.week_number)
+    return current_week
 
 
 @login_required
