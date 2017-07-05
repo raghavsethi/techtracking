@@ -140,6 +140,13 @@ def reserve(request):
         team=team, site_sku=site_sku, classroom=classroom, units=requested_units, date=request_date, period=period_number)
 
     messages.success(request, "Reservation confirmed for {} unit(s) of {}".format(requested_units, site_sku.sku.display_name))
+
+    # Figure out which week this was in
+    weeks: List[Week] = sorted(list(request.user.site.week_set.all()))
+    for week in weeks:
+        if week.start_date <= request_date <= week.end_date:
+            return redirect('week_schedule', week.week_number)
+
     return redirect('index')
 
 
