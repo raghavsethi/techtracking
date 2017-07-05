@@ -5,6 +5,8 @@ from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
 from checkout.models import Team, Subject, User, Site, SKU, SKUType
 
+SITE_PSEUDO_COLUMN = 'resolved_site'
+
 
 class TeamResource(resources.ModelResource):
     subject = fields.Field(
@@ -22,13 +24,13 @@ class TeamResource(resources.ModelResource):
         fields = ('subject', 'members')
 
     def before_import_row(self, row, **kwargs):
-        row['resolved_site'] = kwargs['user'].site
+        row[SITE_PSEUDO_COLUMN] = kwargs['user'].site
 
     def get_instance(self, instance_loader, row):
         subject = self.get_subject(row)
         members = self.get_members(row)
 
-        team_qs = Team.objects.filter(site=row['resolved_site'], subject=subject)
+        team_qs = Team.objects.filter(site=row[SITE_PSEUDO_COLUMN], subject=subject)
         for member in members:
             team_qs = team_qs.filter(members__email=member.email)
 
@@ -38,7 +40,7 @@ class TeamResource(resources.ModelResource):
         subject = self.get_subject(row)
         members = self.get_members(row)
 
-        team: Team = Team.objects.create(subject=subject, site=row['resolved_site'])
+        team: Team = Team.objects.create(subject=subject, site=row[SITE_PSEUDO_COLUMN])
         for member in members:
             team.members.add(member)
 
@@ -56,21 +58,21 @@ class TeamResource(resources.ModelResource):
 
         if not members_str:
             user_columns = list(row.keys())
-            if 'resolved_site' in user_columns:
-                user_columns.remove('resolved_site')
+            if SITE_PSEUDO_COLUMN in user_columns:
+                user_columns.remove(SITE_PSEUDO_COLUMN)
             raise ValueError("Could not find column 'members' in first row - . Found: {}".format(user_columns))
 
         member_names: List[str] = members_str.split(",")
 
         members = []
         for member_name in member_names:
-            member = row['resolved_site'].user_set.filter(name__icontains=member_name.strip()).first()
+            member = row[SITE_PSEUDO_COLUMN].user_set.filter(name__icontains=member_name.strip()).first()
 
             if member is None:
                 raise ValueError("{} not found in list of users at {}. Please enter one of: {}".format(
                     member_name,
-                    row['resolved_site'].name,
-                    ", ".join(["'" + user.get_full_name() + "'" for user in row['resolved_site'].user_set.all()])))
+                    row[SITE_PSEUDO_COLUMN].name,
+                    ", ".join(["'" + user.get_full_name() + "'" for user in row[SITE_PSEUDO_COLUMN].user_set.all()])))
 
             members.append(member)
 
@@ -88,7 +90,7 @@ class TeamResource(resources.ModelResource):
         if not subject_str:
             user_columns = list(row.keys())
             if 'resolved_site' in user_columns:
-                user_columns.remove('resolved_site')
+                user_columns.remove(SITE_PSEUDO_COLUMN)
             raise ValueError("Could not find column 'subject' in first row - . Found: {}".format(user_columns))
 
         subject: Subject = Subject.objects.filter(name__icontains=subject_str).first()
