@@ -130,9 +130,9 @@
     $('.period_checkbox').each(function(idx, checkbox) {
       var isCheckboxChecked = checkbox.checked;
       var checkboxData = checkbox.id.split("_");
-      var periodFree = checkboxData[2];
+      var periodFree = parseInt(checkboxData[2]);
       var periodId = checkboxData[1];
-      var requestedUnits = $('#request_units').val();
+      var requestedUnits = parseInt($('#request_units').val());
 
       if (isCheckboxChecked && periodFree < requestedUnits) {
         $('#period_' + periodId + '_error').show();
