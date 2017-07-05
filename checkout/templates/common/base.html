@@ -41,9 +41,9 @@
         <span class="icon-bar"></span>
       </button>
       {% if user.site %}
-        <a class="navbar-brand" href="#">Aim High - {{ user.site.name }}</a>
+        <a class="navbar-brand" href="{% url 'index' %}">Aim High - {{ user.site.name }}</a>
       {% else %}
-        <a class="navbar-brand" href="#">Aim High - Checkout System</a>
+        <a class="navbar-brand" href="{% url 'index' %}">Aim High - Checkout System</a>
       {% endif %}
     </div>
     <div id="navbar" class="collapse navbar-collapse">
