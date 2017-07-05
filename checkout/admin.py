@@ -9,7 +9,6 @@ from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day,
 
 admin.site.register(SKU)
 admin.site.register(Site)
-admin.site.register(SiteSku)
 admin.site.register(Team)
 admin.site.register(Day)
 admin.site.register(Week)
@@ -115,6 +114,25 @@ class ReservationAdmin(admin.ModelAdmin):
 
     site_sku__sku__display_name.short_description = "SKU Name"
 
+
+class SiteSkuAdmin(admin.ModelAdmin):
+    list_display = ('sku__display_name', 'units_display', 'total_units_display', 'site', 'storage_location')
+    list_filter = ('site', 'sku__display_name')
+
+    def sku__display_name(self, site_sku: SiteSku):
+        return site_sku.sku.display_name
+    sku__display_name.short_description = "SKU Name"
+
+    def units_display(self, site_sku: SiteSku):
+        return site_sku.units
+    units_display.short_description = "Assigned Units"
+
+    def total_units_display(self, site_sku: SiteSku):
+        return site_sku.sku.units
+    total_units_display.short_description = "Total Units"
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Classroom, ClassroomAdmin)
 admin.site.register(Reservation, ReservationAdmin)
+admin.site.register(SiteSku, SiteSkuAdmin)
