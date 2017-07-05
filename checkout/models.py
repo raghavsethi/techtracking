@@ -135,9 +135,6 @@ class Period(models.Model):
                                            'right before Activity 1', validators=[MinValueValidator(1)])
     name = models.CharField(max_length=12, help_text='e.g. Period 3, Activity 2')
 
-    def __eq__(self, other):
-        return self.pk == other.pk
-
     def __lt__(self, other):
         return self.number < other.number
 
@@ -172,9 +169,6 @@ class Reservation(models.Model):
     collaborative = models.BooleanField()
     creator = models.ForeignKey(settings.AUTH_USER_MODEL)
     comment = models.CharField(max_length=1000, null=True, blank=True)
-
-    def __eq__(self, other):
-        return self.pk == other.pk
 
     def __lt__(self, other):
         if self.date != other.date:
@@ -267,9 +261,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.name
-
-    def __eq__(self, other):
-        return self.email == other.email and self.name == other.name and self.site == other.site
 
     def __str__(self):
         return "{} - {}".format(self.email, self.site)
