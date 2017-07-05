@@ -51,16 +51,16 @@
     <br/>
     <br/>
     <div class="row">
-      <div class="col-xs-2 text-left">
+      <div class="col-xs-4 text-left">
         {% if previous_week %}
           <a href="/week/{{ previous_week }}" role="button" class="btn btn-default btn-lg">&laquo;
             Week {{ previous_week }}</a>
         {% endif %}
       </div>
-      <div class="col-xs-8 text-center">
-        <h2 style="margin: 0">Week {{ week.week_number }} Schedule</h2>
+      <div class="col-xs-4 text-center">
+        <h2 style="margin-top: 10px">Week {{ week.week_number }}</h2>
       </div>
-      <div class="col-xs-2 text-right">
+      <div class="col-xs-4 text-right">
         {% if next_week %}
           <a href="/week/{{ next_week }}" role="button" class="btn btn-default btn-lg">Week {{ next_week }} &raquo;</a>
         {% endif %}
