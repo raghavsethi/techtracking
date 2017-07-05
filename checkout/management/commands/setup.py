@@ -39,10 +39,9 @@ class Command(BaseCommand):
             superuser.site = sites[0]
             superuser.save()
 
-        if superuser.display_name is None or superuser.display_name == '':
-            self.stdout.write('Please set a display name for the superuser')
-            display_name = input('Superuser display name (e.g. RusselG): ')
-            superuser.display_name = display_name
+        if superuser.name is None or superuser.name == '':
+            name = input('Superuser name (e.g. Russel Gong): ')
+            superuser.name = name
             superuser.save()
 
         self.stdout.write('')

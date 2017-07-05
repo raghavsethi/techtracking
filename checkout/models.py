@@ -174,11 +174,11 @@ class Week(models.Model):
 
 class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
-        unique_together = (('site', 'display_name'),)
+        unique_together = (('site', 'name'),)
 
     site = models.ForeignKey(Site, null=True)
     email = models.EmailField(unique=True, primary_key=True)
-    display_name = models.CharField(max_length=50, help_text='Short name to display in schedule - e.g. KyraG')
+    name = models.CharField(max_length=100, help_text='Full name')
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
@@ -202,13 +202,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = user_manager
 
     def get_full_name(self):
-        return self.display_name
+        return self.name
 
     def get_short_name(self):
-        return self.display_name
+        return self.name
 
     def __eq__(self, other):
-        return self.email == other.email and self.display_name == other.display_name and self.site == other.site
+        return self.email == other.email and self.name == other.name and self.site == other.site
 
     def __str__(self):
         return "{} - {}".format(self.email, self.site)

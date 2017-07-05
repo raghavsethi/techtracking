@@ -89,10 +89,10 @@ class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('display_name', 'email', 'site', 'is_staff')
+    list_display = ('name', 'email', 'site', 'is_staff')
     list_filter = ('is_staff', 'site')
     fieldsets = (
-        (None, {'fields': ('email', 'password', 'display_name', 'site')}),
+        (None, {'fields': ('email', 'password', 'name', 'site')}),
         ('Permissions', {'fields': ('is_staff', 'user_permissions')}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -100,7 +100,7 @@ class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'display_name', 'site', 'password1', 'password2', 'user_permissions')}),
+            'fields': ('email', 'name', 'site', 'password1', 'password2', 'user_permissions')}),
     )
     search_fields = ('email',)
     ordering = ('email',)
@@ -123,7 +123,7 @@ class ClassroomAdmin(admin.ModelAdmin):
 # noinspection PyMethodMayBeStatic
 class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
-    search_fields = ('team__team__display_name',)
+    search_fields = ('team__team__name',)
     list_display = ('date', 'site_sku__sku__display_name', 'classroom__code', 'units', 'team', 'site_sku__site')
     list_filter = ('site_sku__site', 'date', 'site_sku__sku__display_name')
 
@@ -188,7 +188,7 @@ class SkuAdmin(admin.ModelAdmin):
 class TeamAdmin(ImportExportModelAdmin):
     resource_class = TeamResource
 
-    search_fields = ('team__display_name', 'subject')
+    search_fields = ('team__name', 'subject')
     list_display = ('team_display', 'subject', 'site')
     list_filter = ('site', 'subject')
 
