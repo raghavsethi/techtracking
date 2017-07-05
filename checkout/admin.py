@@ -224,12 +224,39 @@ class WeekAdmin(admin.ModelAdmin):
 
 
 class SiteAdmin(admin.ModelAdmin):
-    def get_queryset(self, request):
-        qs = super(SiteAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
-            return qs
+    list_display = ('name', 'users', 'activated_users', 'classrooms', 'periods', 'reservations', 'skus_allocated', 'total_units_allocated')
 
-        return qs.filter(id=request.user.site.id)
+    def users(self, site: Site):
+        return site.user_set.count()
+
+    def activated_users(self, site: Site):
+        total: int = 0
+        for user in site.user_set.all():
+            if user.has_usable_password():
+                total += 1
+
+        return total
+
+    def classrooms(self, site: Site):
+        return site.classroom_set.count()
+
+    def periods(self, site: Site):
+        return site.period_set.count()
+
+    def reservations(self, site: Site):
+        total: int = 0
+        for site_sku in site.sitesku_set.all():
+            total += site_sku.reservation_set.count()
+        return total
+
+    def skus_allocated(self, site: Site):
+        return site.sitesku_set.count()
+
+    def total_units_allocated(self, site: Site):
+        total: int = 0
+        for site_sku in site.sitesku_set.all():
+            total += site_sku.units
+        return total
 
 
 class PeriodAdmin(admin.ModelAdmin):
@@ -263,6 +290,5 @@ staff_admin_site.register(Reservation, ReservationAdmin)
 staff_admin_site.register(SiteSku, SiteSkuAdmin)
 staff_admin_site.register(Team, TeamAdmin)
 staff_admin_site.register(Week, WeekAdmin)
-staff_admin_site.register(Site, SiteAdmin)
 staff_admin_site.register(Period, PeriodAdmin)
 
