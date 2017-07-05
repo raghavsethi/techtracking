@@ -129,12 +129,12 @@
                                   {% for sku in period_details.skus %}
                                     {% for reservation in sku.reservations %}
                                       <div class="row reservation" data-toggle="tooltip" data-placement="bottom"
-                                           title="{{ reservation.units }} units reserved by {{ reservation.team }} in classroom {{ reservation.classroom.name }}">
+                                           title="{{ reservation.units }} units reserved by {{ reservation.team }} for location {{ reservation.classroom.name }}">
                                         <div class="col-xs-12">
                                           <div class="row">
                                             <div class="col-xs-12 sku-reservation">
                                             <span
-                                                class="label label-info sku-room">{{ reservation.classroom.name }}</span>
+                                                class="label label-info sku-room">{{ reservation.classroom.code }}</span>
                                               <span class="label label-default sku-units">{{ reservation.units }}</span>
                                               <small>{{ reservation.site_sku.sku.display_name }}</small>
                                             </div>

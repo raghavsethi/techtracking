@@ -38,13 +38,14 @@ class SiteSku(models.Model):
 
 class Classroom(models.Model):
     class Meta:
-        unique_together = (('site', 'name'),)
+        unique_together = (('site', 'code'), ('site', 'name'))
 
     site = models.ForeignKey(Site)
     name = models.CharField(max_length=50)
+    code = models.CharField(max_length=3)
 
     def __str__(self):
-        return "{} - {}".format(self.name, self.site)
+        return "{} - {}".format(self.code, self.name, self.site)
 
 
 class Team(models.Model):

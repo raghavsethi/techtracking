@@ -101,7 +101,7 @@
         <div class="col-xs-9">
           <select name="classroom_pk" class="form-control">
             {% for classroom in classrooms %}
-              <option value="{{ classroom.pk }}">{{ classroom.name }}</option>
+              <option value="{{ classroom.pk }}">{{ classroom.code }} ({{ classroom.name }})</option>
             {% empty %}
               There must be at least one classroom at the site
             {% endfor %}
