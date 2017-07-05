@@ -7,7 +7,6 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week
 
 
-admin.site.register(Site)
 admin.site.register(Day)
 admin.site.unregister(Group)
 
@@ -91,6 +90,13 @@ class ClassroomAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'site')
     list_filter = ('site',)
 
+    def get_queryset(self, request):
+        qs = super(ClassroomAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site=request.user.site)
+
 
 # noinspection PyMethodMayBeStatic
 class ReservationAdmin(admin.ModelAdmin):
@@ -112,9 +118,16 @@ class ReservationAdmin(admin.ModelAdmin):
 
     site_sku__sku__display_name.short_description = "SKU Name"
 
+    def get_queryset(self, request):
+        qs = super(ReservationAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site_sku__site=request.user.site)
+
 
 class SiteSkuAdmin(admin.ModelAdmin):
-    list_display = ('sku__display_name', 'units_display', 'total_units_display', 'site', 'storage_location')
+    list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
     list_filter = ('site', 'sku__display_name')
 
     def sku__display_name(self, site_sku: SiteSku):
@@ -125,9 +138,12 @@ class SiteSkuAdmin(admin.ModelAdmin):
         return site_sku.units
     units_display.short_description = "Assigned Units"
 
-    def total_units_display(self, site_sku: SiteSku):
-        return site_sku.sku.units
-    total_units_display.short_description = "Total Units"
+    def get_queryset(self, request):
+        qs = super(SiteSkuAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site=request.user.site)
 
 
 class SkuAdmin(admin.ModelAdmin):
@@ -156,6 +172,13 @@ class TeamAdmin(admin.ModelAdmin):
         return team.__str__()
     team_display.short_description = "Team"
 
+    def get_queryset(self, request):
+        qs = super(TeamAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site=request.user.site)
+
 
 # noinspection PyMethodMayBeStatic
 class WeekAdmin(admin.ModelAdmin):
@@ -168,6 +191,22 @@ class WeekAdmin(admin.ModelAdmin):
     def site_week(self, week: Week):
         return week.site.name + " - Week " + str(week.week_number)
 
+    def get_queryset(self, request):
+        qs = super(WeekAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site=request.user.site)
+
+
+class SiteAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = super(SiteAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(id=request.user.site.id)
+
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Classroom, ClassroomAdmin)
@@ -176,3 +215,4 @@ admin.site.register(SiteSku, SiteSkuAdmin)
 admin.site.register(SKU, SkuAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Week, WeekAdmin)
+admin.site.register(Site, SiteAdmin)
