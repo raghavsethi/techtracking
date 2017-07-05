@@ -7,7 +7,6 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week
 
 
-admin.site.register(SKU)
 admin.site.register(Site)
 admin.site.register(Team)
 admin.site.register(Day)
@@ -132,7 +131,25 @@ class SiteSkuAdmin(admin.ModelAdmin):
     total_units_display.short_description = "Total Units"
 
 
+class SkuAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
+
+    def total_units_display(self, sku: SKU):
+        return sku.units
+    total_units_display.short_description = "Total Units"
+
+    def assigned_units_display(self, sku: SKU):
+        assigned_units: int = 0
+        for site_sku in sku.sitesku_set.all():
+            assigned_units += site_sku.units
+
+        return assigned_units
+
+    assigned_units_display.short_description = "Assigned Units"
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Classroom, ClassroomAdmin)
 admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(SiteSku, SiteSkuAdmin)
+admin.site.register(SKU, SkuAdmin)
