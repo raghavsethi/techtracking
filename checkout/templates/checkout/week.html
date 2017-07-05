@@ -3,6 +3,7 @@
 {% block title %} Schedule {% endblock %}
 
 {% block content %}
+  {% now "Y-m-d" as today %}
   <div class="row">
     <div class="col-xs-3 text-left">
       {% if previous_week %}
@@ -43,7 +44,7 @@
         <tr>
           <th></th>
           {% for calendar_day in calendar_days %}
-            <th class="text-center" style="min-width: 150px; width:250px">
+            <th class="text-center {% if calendar_day.date.isoformat == today %}table-cell-today{% endif %}" style="min-width: 150px; width:250px;">
               {{ calendar_day.date|date:"D, M d" }}
             </th>
           {% endfor %}
@@ -60,7 +61,7 @@
                 {% if work_day.date == calendar_day.date %}
                   {% for period_details in work_day.periods %}
                     {% if period_details.period_number == period.0 %}
-                      <td>
+                      <td class="{% if calendar_day.date.isoformat == today %}table-cell-today{% endif %}">
                         <div class="table-cell">
                           <div class="reserve">
                             <div class="btn-group btn-group-justified">

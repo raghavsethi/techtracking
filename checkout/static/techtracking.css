@@ -71,6 +71,10 @@
     width: 100%;
 }
 
+.table-cell-today {
+    background-color: #f3fffa;
+}
+
 .sku-room {
     min-width: 35px;
     display: inline-block;
