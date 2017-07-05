@@ -369,7 +369,7 @@ def export(request):
 
         writer.writerow([
             site.name,
-            reservation.creator.email,
+            reservation.creator.name + " (" + reservation.creator.email + ")",
             ", ".join([member.name for member in reservation.team.members.all()]),
             reservation.team.subject,
             reservation.classroom.name,
