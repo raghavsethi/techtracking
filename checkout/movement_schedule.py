@@ -38,10 +38,14 @@ def order_candidates(reservation: Reservation, units_by_location: Dict[Classroom
     return candidates
 
 
-def get_periods_with_cleanup() -> List[Period]:
-    periods = sorted(list(Period.objects.all()))
-    periods.append(Period(pk=0, number=len(periods), name="Cleanup"))
-    return periods
+def get_movement_periods() -> List[Period]:
+    movement_periods = []
+    for period in sorted(list(Period.objects.all())):
+        period.name = "Before " + period.name
+        movement_periods.append(period)
+
+    movement_periods.append(Period(pk=0, number=len(movement_periods), name="Cleanup"))
+    return movement_periods
 
 
 class MovementSchedule:
@@ -50,7 +54,7 @@ class MovementSchedule:
         self.periods: List[PeriodMovements] = []
         movements: Dict[Period, List[Movement]] = OrderedDict()
 
-        periods: List[Period] = get_periods_with_cleanup()
+        periods: List[Period] = get_movement_periods()
         for period in periods:
             movements[period] = []
 
