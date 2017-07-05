@@ -397,4 +397,10 @@ class PeriodAdmin(admin.ModelAdmin):
 
         return qs.filter(site=request.user.site)
 
+
+@admin.register(UsagePurpose)
+class UsagePurposeAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
 admin.site.unregister(Group)

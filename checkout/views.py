@@ -163,7 +163,8 @@ def reserve_request(request):
         "teams": teams,
         "selected_period": selected_period,
         "free_units": free_units,
-        "classrooms": Classroom.objects.filter(site=site_sku.site)
+        "classrooms": Classroom.objects.filter(site=site_sku.site),
+        "purpose_list": UsagePurpose.objects.all(),
     }
 
     return render(request, "checkout/request.html", context)
@@ -176,6 +177,7 @@ def reserve(request):
     request_date = datetime.strptime(request.POST['request_date'], '%Y-%m-%d').date()
     site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.POST['site_assignment_pk'])
     team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
+    purpose: UsagePurpose = get_object_or_404(UsagePurpose, pk=request.POST['purpose_pk'])
 
     selected_periods = []
     for period in sorted(user.site.period_set.all()):
@@ -221,6 +223,7 @@ def reserve(request):
             units=requested_units,
             date=request_date,
             period=period,
+            purpose=purpose,
             comment=comment)
 
         reserved_periods.append(period.name)

@@ -129,6 +129,10 @@ class Period(models.Model):
         return self.site.__str__() + " - " + self.name + " (" + str(self.number) + ")"
 
 
+class UsagePurpose(models.Model):
+    purpose = models.CharField(max_length=100, help_text='e.g. Research (Google, Wikipedia, Wolfram Alpha etc.)')
+
+
 @total_ordering
 class Reservation(models.Model):
     class Meta:
@@ -140,6 +144,7 @@ class Reservation(models.Model):
     date = models.DateField()
     period = models.ForeignKey(Period)
     units = models.IntegerField()
+    purpose = models.ForeignKey(UsagePurpose, null=True, blank=True)
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
     def __eq__(self, other):

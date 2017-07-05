@@ -85,6 +85,16 @@
       </div>
     </div>
     <div class="form-group">
+      <label class="col-md-2 col-xs-3 control-label">Purpose</label>
+      <div class="col-md-4 col-xs-9">
+        <select name="purpose_pk" class="form-control">
+          {% for purpose in purpose_list %}
+            <option value="{{ purpose.pk }}">{{ purpose.purpose }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Same Units</label>
       <div class="col-md-5 col-xs-9">
         <input type="checkbox" id="same_units" onclick="checkValidReservation();"/>
