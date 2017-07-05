@@ -4,32 +4,32 @@
 
 {% block content %}
   <div class="row">
-    <div class="col-xs-4 text-left">
+    <div class="col-xs-3 text-left">
       {% if previous_week %}
         {% if user.is_authenticated %}
           <a href="/week/{{ previous_week }}" role="button" class="btn btn-default btn-lg">
-            &laquo; Week {{ previous_week }}
+            &laquo; <span class="hidden-xs">Week</span> {{ previous_week }}
           </a>
         {% else %}
           <a href="/site/{{ aimhigh_site.pk }}/week/{{ previous_week }}" role="button" class="btn btn-default btn-lg">
-            &laquo; Week {{ previous_week }}
+            &laquo; <span class="hidden-xs">Week</span> {{ previous_week }}
           </a>
         {% endif %}
       {% endif %}
     </div>
-    <div class="col-xs-4 text-center">
+    <div class="col-xs-6 text-center">
       <h2 style="margin-top: 10px">Week {{ week.week_number }}</h2>
     </div>
-    <div class="col-xs-4 text-right">
+    <div class="col-xs-3 text-right">
       {% if next_week %}
         {% if user.is_authenticated %}
           <a href="/week/{{ next_week }}" role="button" class="btn btn-default btn-lg">
-            Week {{ next_week }} &raquo;
+            <span class="hidden-xs">Week</span> {{ next_week }} &raquo;
           </a>
         {% else %}
           <a href="/site/{{ aimhigh_site.pk }}/week/{{ next_week }}" role="button"
              class="btn btn-default btn-lg">
-            Week {{ next_week }} &raquo;
+            <span class="hidden-xs">Week</span> {{ next_week }} &raquo;
           </a>
         {% endif %}
       {% endif %}
