@@ -251,7 +251,7 @@ def reserve(request):
 def reservations(request):
     user: User = request.user
 
-    teams: List[Team] = Team.objects.filter(team__email=user.email).all()
+    teams: List[Team] = Team.objects.filter(members__email=user.email).all()
     user_reservations: List[Reservation] = []
 
     for team in teams:
