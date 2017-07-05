@@ -222,7 +222,7 @@ class Week(models.Model):
         return self.week_number < other.week_number
 
     def __str__(self):
-        days: List[Day] = list(self.days())
+        days: List[date] = list(self.days())
         return "{} - Week {} ({} days, {} - {})".format(
             self.site, self.week_number, len(days), self.start_date(), self.end_date())
 
