@@ -11,7 +11,6 @@ admin.site.register(SKU)
 admin.site.register(Site)
 admin.site.register(SiteSku)
 admin.site.register(Team)
-admin.site.register(Reservation)
 admin.site.register(Day)
 admin.site.register(Week)
 admin.site.unregister(Group)
@@ -97,5 +96,26 @@ class ClassroomAdmin(admin.ModelAdmin):
     list_filter = ('site',)
 
 
+# noinspection PyMethodMayBeStatic
+class ReservationAdmin(admin.ModelAdmin):
+    date_hierarchy = 'date'
+    search_fields = ('date', 'site_sku__sku__display_name', 'classroom__code', 'team', 'site_sku__site')
+    list_display = ('date', 'site_sku__sku__display_name', 'classroom__code', 'units', 'team', 'site_sku__site')
+    list_filter = ('site_sku__site', 'date', 'site_sku__sku__display_name')
+
+    def classroom__code(self, reservation: Reservation):
+        return reservation.classroom.code
+
+    def site_sku__site(self, reservation: Reservation):
+        return reservation.site_sku.site
+
+    site_sku__site.short_description = "Site"
+
+    def site_sku__sku__display_name(self, reservation: Reservation):
+        return reservation.site_sku.sku.display_name
+
+    site_sku__sku__display_name.short_description = "SKU Name"
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Classroom, ClassroomAdmin)
+admin.site.register(Reservation, ReservationAdmin)
