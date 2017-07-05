@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction, IntegrityError
 from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 
 from checkout.models import *
 from checkout.movement_schedule import MovementSchedule, get_movement_periods
@@ -32,7 +33,7 @@ def index(request):
         return HttpResponseBadRequest("At least one week must be configured for site %s. Please contact your "
                                       "administrator." % site.name)
 
-    return render_schedule(request, site, week)
+    return render_schedule(request, week)
 
 
 def resolve_week(user: User):
@@ -69,57 +70,25 @@ def week_schedule(request, week_number):
 
     logger.info("[%s] Processing week %s schedule for %s", user.email, week, site)
 
-    return render_schedule(request, site, week)
+    return render_schedule(request, week)
 
 
-def site_schedule(request, site_id):
-    site: Site = get_object_or_404(Site, pk=site_id)
-    weeks: List[Week] = sorted(list(site.week_set.all()))
+def render_schedule(request, week: Week):
+    site: Site = request.user.site
 
-    if len(weeks) < 1:
-        logger.error("[logged-out] No week objects found for site %s", site)
-        return HttpResponseBadRequest("At least one week must be configured for site %s. Please contact your "
-                                      "administrator" % site.name)
-
-    week_number = weeks[0].week_number
-    today = datetime.now().date()
-
-    # TODO: Test this logic
-    for week in weeks:
-        if week.start_date() <= today <= week.end_date():
-            week_number = week.week_number
-            break
-        if today <= week.start_date():
-            week_number = week.week_number
-
-    logger.info("[logged-out] Resolved current week for %s to be %s", site, week_number)
-    week: Week = site.week_set.filter(week_number=week_number).first()
-
-    return render_schedule(request, site, week)
-
-
-def site_week_schedule(request, site_id, week_number: int):
-    site: Site = get_object_or_404(Site, pk=site_id)
-
-    week: Week = site.week_set.filter(week_number=week_number).first()
-    if week is None:
-        logger.warning("[logged-out] Received request for nonexistent week %s at site %s", week_number, site)
-        return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
-
-    logger.info("[logged-out] Processing week %s schedule for %s", week_number, site)
-
-    return render_schedule(request, site, week)
-
-
-def render_schedule(request, site: Site, week: Week):
     working_days = sorted(list(week.days()))
 
     schedule: List[ReservationSchedule] = []
     for day in working_days:
         schedule.append(ReservationSchedule(site, day))
 
-    previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
-    next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
+    previous_week: Week = (site.week_set.filter(week_number=week.week_number - 1).first(),)
+    next_week: Week = (site.week_set.filter(week_number=week.week_number + 1).first(),)
+
+    if previous_week[0]:
+        previous_week = (previous_week[0], reverse('schedule', args=[previous_week[0].week_number]))
+    if next_week[0]:
+        next_week = (next_week[0], reverse('schedule', args=[next_week[0].week_number]))
 
     context = {
         "sites": Site.objects.all(),
@@ -255,7 +224,7 @@ def reserve(request):
     weeks: List[Week] = sorted(list(request.user.site.week_set.all()))
     for week in weeks:
         if week.start_date() <= request_date <= week.end_date():
-            return redirect('week_schedule', week.week_number)
+            return redirect('schedule', week.week_number)
 
     return redirect('index')
 
@@ -288,8 +257,30 @@ def reservations(request):
 @login_required
 def movements(request):
     user: User = request.user
-    site: Site = user.site
+
     week: Week = resolve_week(user)
+    return render_movements(request, week)
+
+
+@login_required
+def week_movements(request, week_number):
+    user: User = request.user
+    site: Site = user.site
+
+    week: Week = site.week_set.filter(week_number=week_number).first()
+    if week is None:
+        logger.warning("[%s] Received request for nonexistent week %s at site %s", user.email, week_number, site)
+        return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
+
+    logger.info("[%s] Processing week %s movements for %s", user.email, week, site)
+
+    return render_movements(request, week)
+
+
+@login_required
+def render_movements(request, week: Week):
+    user: User = request.user
+    site: Site = user.site
 
     if week is None:
         logger.error("[%s] No week objects found for site %s", user.email, site)
@@ -307,8 +298,13 @@ def movements(request):
     for day in working_days:
         schedule.append(MovementSchedule(site, day))
 
-    previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
-    next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
+    previous_week: Week = (site.week_set.filter(week_number=week.week_number - 1).first(),)
+    next_week: Week = (site.week_set.filter(week_number=week.week_number + 1).first(),)
+
+    if previous_week[0]:
+        previous_week = (previous_week[0], reverse('movements', args=[previous_week[0].week_number]))
+    if next_week[0]:
+        next_week = (next_week[0], reverse('movements', args=[next_week[0].week_number]))
 
     context = {
         "sites": Site.objects.all(),

@@ -20,12 +20,11 @@ import checkout.views
 
 urlpatterns = [
     url(r'^$', checkout.views.index, name='index'),
-    url(r'^site/(?P<site_id>[0-9]+)$', checkout.views.site_schedule, name='site_schedule'),
-    url(r'^site/(?P<site_id>[0-9]+)/week/(?P<week_number>[0-9]+)$', checkout.views.site_week_schedule, name='site_schedule'),
-    url(r'^week/(?P<week_number>[0-9]+)$', checkout.views.week_schedule, name='week_schedule'),
+    url(r'^week/(?P<week_number>[0-9]+)$', checkout.views.week_schedule, name='schedule'),
     url(r'^request/', checkout.views.reserve_request, name='reserve_request'),
     url(r'^reserve/', checkout.views.reserve, name='reserve'),
     url(r'^reservations/', checkout.views.reservations, name='reservations'),
+    url(r'^movements/(?P<week_number>[0-9]+)$', checkout.views.week_movements, name='movements'),
     url(r'^movements/', checkout.views.movements, name='movements'),
     url(r'^delete/', checkout.views.delete, name='delete'),
     url(r'^export/', checkout.views.export, name='export'),

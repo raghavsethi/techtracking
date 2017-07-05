@@ -4,34 +4,21 @@
   {% now "Y-m-d" as today %}
   <div class="row">
     <div class="col-xs-3 text-left">
-      {% if previous_week.week_number %}
-        {% if user.is_authenticated %}
-          <a href="/week/{{ previous_week.week_number }}" role="button" class="btn btn-default btn-lg">
-            &laquo; <span class="hidden-xs">Week</span> {{ previous_week.week_number }}
-          </a>
-        {% else %}
-          <a href="/site/{{ user.site.pk }}/week/{{ previous_week.week_number }}" role="button"
-             class="btn btn-default btn-lg">
-            &laquo; <span class="hidden-xs">Week</span> {{ previous_week.week_number }}
-          </a>
-        {% endif %}
+      {% if previous_week.0 %}
+        <a href="{{ previous_week.1 }}" role="button"
+           class="btn btn-default btn-lg">
+          &laquo; <span class="hidden-xs">Week</span> {{ previous_week.0.week_number }}
+        </a>
       {% endif %}
     </div>
     <div class="col-xs-6 text-center">
       <h2 style="margin-top: 10px">Week {{ week.week_number }}</h2>
     </div>
     <div class="col-xs-3 text-right">
-      {% if next_week %}
-        {% if user.is_authenticated %}
-          <a href="/week/{{ next_week.week_number }}" role="button" class="btn btn-default btn-lg">
-            <span class="hidden-xs">Week</span> {{ next_week.week_number }} &raquo;
-          </a>
-        {% else %}
-          <a href="/site/{{ user.site.pk }}/week/{{ next_week.week_number }}" role="button"
-             class="btn btn-default btn-lg">
-            <span class="hidden-xs">Week</span> {{ next_week.week_number }} &raquo;
-          </a>
-        {% endif %}
+      {% if next_week.0 %}
+        <a href="{{ next_week.1 }}" role="button" class="btn btn-default btn-lg">
+          <span class="hidden-xs">Week</span> {{ next_week.0.week_number }} &raquo;
+        </a>
       {% endif %}
     </div>
   </div>
