@@ -61,6 +61,10 @@
           </div>
         </td>
       </tr>
+    {% empty %}
+      <div class="alert alert-warning">
+        You have not made any reservations yet. Click a period in the <a href="{% url 'index' %}">schedule</a> to make a reservation.
+      </div>
     {% endfor %}
     </tbody>
   </table>
