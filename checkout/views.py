@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -230,16 +230,21 @@ def reserve(request):
         logger.info("[%s] Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
                     request.user.email, team, site_sku, classroom, requested_units, request_date, period)
 
-        Reservation.objects.create(
-            team=team,
-            site_sku=site_sku,
-            classroom=classroom,
-            units=requested_units,
-            date=request_date,
-            period=period,
-            purpose=purpose,
-            creator=user,
-            comment=comment)
+        try:
+            Reservation.objects.create(
+                team=team,
+                site_sku=site_sku,
+                classroom=classroom,
+                units=requested_units,
+                date=request_date,
+                period=period,
+                purpose=purpose,
+                creator=user,
+                comment=comment)
+        except IntegrityError:
+            return error_redirect(request, "Failed to make reservation - another reservation by this team for {} "
+                                           "in {} during {} already exists. Please delete the existing reservation and "
+                                           "try again".format(site_sku.sku.display_name, classroom.name, period.name))
 
         reserved_periods.append(period.name)
 
