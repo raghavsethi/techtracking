@@ -75,6 +75,10 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     source venv/bin/activate
 ```
+* Export secret key
+```commandline
+    export SECRET_KEY=foo
+```
 * Install the required libraries
 ```commandline
     pip install -r requirements.txt
@@ -107,6 +111,10 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 * Activate the virtualenv
 ```commandline
     source venv/bin/activate
+```
+* Export secret key (for email delivery, you'll need to set up `SENDGRID_API_KEY` also)
+```commandline
+    export SECRET_KEY=foo
 ```
 * Run the local server
 ```commandline
