@@ -54,11 +54,20 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     deactivate
 ```
 
-## Running the server
+## Running the server or making changes
+* Activate the virtualenv
+```commandline
+    source venv/bin/activate
+```
 * Run the local server
 ```commandline
     python manage.py runserver
 ```
 * Open up `http://localhost:8000` in your favorite browser
+* Play around with the app and make changes
 * Any changes you save to your working directory will automatically be reflected
   in the web browser. Just hit reload.
+* When you're done:
+```commandline
+    deactivate
+```
