@@ -1,10 +1,20 @@
 from django import forms
 from django.contrib import admin
-from django.contrib.auth.models import Group
+from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week, Period
+
+
+class CheckoutAdminSite(AdminSite):
+    site_title = 'Aim High - Checkout System'
+
+    # Text to put in each page's <h1> (and above login form).
+    site_header = 'Aim High - Checkout System'
+
+    # Text to put at the top of the admin index page.
+    index_title = 'Administration'
 
 
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
@@ -55,7 +65,6 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 
-@admin.register(User)
 class UserAdmin(BaseUserAdmin):
     # The forms to add and change user instances
     form = UserChangeForm
@@ -82,7 +91,6 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
-@admin.register(Classroom)
 class ClassroomAdmin(admin.ModelAdmin):
     search_fields = ('code', 'name', 'site__name',)
     list_display = ('code', 'name', 'site')
@@ -97,7 +105,6 @@ class ClassroomAdmin(admin.ModelAdmin):
 
 
 # noinspection PyMethodMayBeStatic
-@admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__display_name',)
@@ -125,7 +132,6 @@ class ReservationAdmin(admin.ModelAdmin):
         return qs.filter(site_sku__site=request.user.site)
 
 
-@admin.register(SiteSku)
 class SiteSkuAdmin(admin.ModelAdmin):
     list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
     list_filter = ('site', 'sku__display_name')
@@ -146,7 +152,6 @@ class SiteSkuAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
-@admin.register(SKU)
 class SkuAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
 
@@ -164,7 +169,6 @@ class SkuAdmin(admin.ModelAdmin):
     assigned_units_display.short_description = "Assigned Units"
 
 
-@admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     search_fields = ('team__display_name',)
     list_display = ('team_display', 'site')
@@ -183,7 +187,6 @@ class TeamAdmin(admin.ModelAdmin):
 
 
 # noinspection PyMethodMayBeStatic
-@admin.register(Week)
 class WeekAdmin(admin.ModelAdmin):
     list_display = ('site_week', 'start_date', 'end_date', 'working_days')
     list_filter = ('site',)
@@ -202,7 +205,6 @@ class WeekAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
-@admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(SiteAdmin, self).get_queryset(request)
@@ -212,7 +214,6 @@ class SiteAdmin(admin.ModelAdmin):
         return qs.filter(id=request.user.site.id)
 
 
-@admin.register(Period)
 class PeriodAdmin(admin.ModelAdmin):
     list_display = ('name', 'number', 'site')
     list_filter = ('site',)
@@ -224,6 +225,14 @@ class PeriodAdmin(admin.ModelAdmin):
 
         return qs.filter(site=request.user.site)
 
-
-admin.site.register(Day)
-admin.site.unregister(Group)
+admin_site = CheckoutAdminSite()
+admin_site.register(User, UserAdmin)
+admin_site.register(Classroom, ClassroomAdmin)
+admin_site.register(Reservation, ReservationAdmin)
+admin_site.register(SiteSku, SiteSkuAdmin)
+admin_site.register(SKU, SkuAdmin)
+admin_site.register(Team, TeamAdmin)
+admin_site.register(Week, WeekAdmin)
+admin_site.register(Site, SiteAdmin)
+admin_site.register(Period, PeriodAdmin)
+admin_site.register(Day)

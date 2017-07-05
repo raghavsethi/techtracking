@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from checkout.admin import admin_site
 
 import checkout.views
 
@@ -27,6 +28,6 @@ urlpatterns = [
     url(r'^reserve/', checkout.views.reserve, name='reserve'),
     url(r'^reservations/', checkout.views.reservations, name='reservations'),
     url(r'^delete/', checkout.views.delete, name='delete'),
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', admin_site.urls),
     url(r'^accounts/', include('django.contrib.auth.urls')),
 ]
