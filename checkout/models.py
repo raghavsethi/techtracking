@@ -63,7 +63,9 @@ class SiteSku(models.Model):
         default="Site Director's office",
         help_text="e.g. Storage closet in classroom 201")
 
-    units = models.IntegerField(help_text='Number of units being assigned to this site')
+    units = models.IntegerField(
+        help_text='Number of units being assigned to this site',
+        validators=[MinValueValidator(1)])
 
     def clean(self):
         super(SiteSku, self).clean()
@@ -121,7 +123,7 @@ class Team(models.Model):
 class Period(models.Model):
     number = models.IntegerField(help_text='Determines the ordering of periods in a day. For example, if Period 4 is '
                                            'given number 4, and Activity 1 is given number 5, then Period 4 occurs '
-                                           'right before Activity 1')
+                                           'right before Activity 1', validators=[MinValueValidator(1)])
     name = models.CharField(max_length=12, help_text='e.g. Period 3, Activity 2')
 
     def __eq__(self, other):
@@ -153,7 +155,7 @@ class Reservation(models.Model):
     classroom = models.ForeignKey(Classroom)
     date = models.DateField()
     period = models.ForeignKey(Period)
-    units = models.IntegerField()
+    units = models.IntegerField(validators=[MinValueValidator(1)])
     purpose = models.ForeignKey(UsagePurpose, null=True, blank=True)
     creator = models.ForeignKey(settings.AUTH_USER_MODEL)
     comment = models.CharField(max_length=1000, null=True, blank=True)
@@ -183,7 +185,7 @@ class Week(models.Model):
         unique_together = (('site', 'week_number'),)
 
     site = models.ForeignKey(Site)
-    week_number = models.IntegerField()
+    week_number = models.IntegerField(validators=[MinValueValidator(0)])
     pickled_days = models.CharField(max_length=1024)
 
     def start_date(self) -> date:
