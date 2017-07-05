@@ -34,6 +34,7 @@ class SiteSku(models.Model):
 
     site = models.ForeignKey(Site)
     sku = models.ForeignKey(SKU)
+    storage_location = models.CharField(max_length=100, null=True, blank=True)
 
     # TODO: add constraints here to make sure the sum cannot exceed total_units
     units = models.IntegerField()
