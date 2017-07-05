@@ -23,7 +23,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Application definition
 
@@ -171,8 +171,19 @@ LOGGING = {
 
 SESSION_COOKIE_AGE = 3628800  # 6 weeks
 
+# Email
+
+SERVER_EMAIL = 'checkout.help@aimhigh.org'
+
+# Transactional email
+
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+
+# Error reporting email
+
+ADMINS = [('Checkout Admin', SERVER_EMAIL)]

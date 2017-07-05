@@ -271,7 +271,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Generates a one-use only link for creating a password and sends to the user's email.
         """
-        from_email = 'checkout.help@aimhigh.org'
+        from_email = settings.SERVER_EMAIL
         domain = get_current_site(request)
 
         context = {
