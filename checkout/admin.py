@@ -14,6 +14,9 @@ class SuperuserAdminSite(AdminSite):
     site_header = 'Aim High - Checkout System'
     index_title = 'Superuser Administration'
 
+    def has_permission(self, request):
+        return request.user.is_superuser
+
 
 class SiteDirectorAdminSite(AdminSite):
     site_title = 'Aim High - Checkout System Admin'
