@@ -8,6 +8,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.forms.utils import ErrorList
 from import_export.admin import ImportExportModelAdmin
+from import_export.formats import base_formats
 
 from checkout.bulk_imports import TeamResource, UserResource
 from checkout.models import *
@@ -112,6 +113,12 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
             return qs
 
         return qs.filter(site=request.user.site)
+
+    def get_export_formats(self):
+        return [f for f in [base_formats.CSV, base_formats.XLS, base_formats.XLSX] if f().can_export()]
+
+    def get_import_formats(self):
+        return [f for f in [base_formats.CSV, base_formats.XLS, base_formats.XLSX] if f().can_import()]
 
 
 @admin.register(Classroom)
@@ -223,6 +230,12 @@ class TeamAdmin(ImportExportModelAdmin):
             return qs
 
         return qs.filter(site=request.user.site)
+
+    def get_export_formats(self):
+        return [f for f in [base_formats.CSV, base_formats.XLS, base_formats.XLSX] if f().can_export()]
+
+    def get_import_formats(self):
+        return [f for f in [base_formats.CSV, base_formats.XLS, base_formats.XLSX] if f().can_import()]
 
 
 class WeekForm(forms.ModelForm):
