@@ -22,48 +22,81 @@ class TeamResource(resources.ModelResource):
         fields = ('subject', 'members')
 
     def before_import_row(self, row, **kwargs):
-        if kwargs['user'].is_superuser:
-            raise ValueError("Superusers are not allowed to import teams from files")
         row['resolved_site'] = kwargs['user'].site
 
     def get_instance(self, instance_loader, row):
-        subject = self.check_row(row)
+        subject = self.get_subject(row)
+        members = self.get_members(row)
 
-        member_names: List[str] = row['Members'].split(",")
         team_qs = Team.objects.filter(site=row['resolved_site'], subject=subject)
-        for member_name in member_names:
-            member: User = row['resolved_site'].user_set.filter(name__icontains=member_name.strip()).first()
-            if member is None:
-                raise ValueError("Teacher {} not found in database. Please use the previously uploaded display name"
-                                 .format(member_name))
-
+        for member in members:
             team_qs = team_qs.filter(members__email=member.email)
 
         return team_qs.first()
 
     def init_instance(self, row=None):
-        subject = self.check_row(row)
+        subject = self.get_subject(row)
+        members = self.get_members(row)
 
-        member_names: List[str] = row['Members'].split(",")
         team: Team = Team.objects.create(subject=subject, site=row['resolved_site'])
-        for member_name in member_names:
-            member = row['resolved_site'].user_set.filter(name__icontains=member_name.strip()).first()
-            if member is None:
-                raise ValueError("Teacher {} not found in database. Please use the previously uploaded display name"
-                                 .format(member_name))
-
+        for member in members:
             team.members.add(member)
 
         team.save()
         return team
 
     @staticmethod
-    def check_row(row):
-        if 'Subject' not in row or 'Members' not in row:
-            raise ValueError("Both 'Subject' and 'Members' columns must exist. Found: {}".format(list(row.keys())))
-        subject: Subject = Subject.objects.filter(name__icontains=row['Subject']).first()
+    def get_members(row) -> List[User]:
+        members_str = None
+
+        if 'Members' in row:
+            members_str = row['Members']
+        if 'members' in row:
+            members_str = row['members']
+
+        if not members_str:
+            user_columns = list(row.keys())
+            if 'resolved_site' in user_columns:
+                user_columns.remove('resolved_site')
+            raise ValueError("Could not find column 'members' in first row - . Found: {}".format(user_columns))
+
+        member_names: List[str] = members_str.split(",")
+
+        members = []
+        for member_name in member_names:
+            member = row['resolved_site'].user_set.filter(name__icontains=member_name.strip()).first()
+
+            if member is None:
+                raise ValueError("{} not found in list of users at {}. Please enter one of: {}".format(
+                    member_name,
+                    row['resolved_site'].name,
+                    ", ".join(["'" + user.get_full_name() + "'" for user in row['resolved_site'].user_set.all()])))
+
+            members.append(member)
+
+        return members
+
+    @staticmethod
+    def get_subject(row) -> Subject:
+        subject_str = None
+
+        if 'Subject' in row:
+            subject_str = row['Subject']
+        if 'subject' in row:
+            subject_str = row['subject']
+
+        if not subject_str:
+            user_columns = list(row.keys())
+            if 'resolved_site' in user_columns:
+                user_columns.remove('resolved_site')
+            raise ValueError("Could not find column 'subject' in first row - . Found: {}".format(user_columns))
+
+        subject: Subject = Subject.objects.filter(name__icontains=subject_str).first()
         if subject is None:
-            raise ValueError("Subject {} not found in database".format(row['Subject']))
+            raise ValueError("Subject {} not found in database. Please enter one of: {}".format(
+                subject_str,
+                ", ".join(["'" + subject.name + "'" for subject in Subject.objects.all()])))
+
         return subject
 
 
