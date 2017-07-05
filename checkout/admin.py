@@ -99,7 +99,6 @@ class ClassroomAdmin(admin.ModelAdmin):
 # noinspection PyMethodMayBeStatic
 class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
-    search_fields = ('date', 'site_sku__sku__display_name', 'classroom__code', 'team', 'site_sku__site')
     list_display = ('date', 'site_sku__sku__display_name', 'classroom__code', 'units', 'team', 'site_sku__site')
     list_filter = ('site_sku__site', 'date', 'site_sku__sku__display_name')
 
