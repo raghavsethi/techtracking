@@ -139,10 +139,6 @@ class UserResource(resources.ModelResource):
     def skip_row(self, instance, original):
         return original == instance
 
-    def after_save_instance(self, user: User, using_transactions, dry_run):
-        if not dry_run and not user.has_usable_password():
-                user.send_welcome_email()
-
 
 class SKUResource(resources.ModelResource):
     class Meta:
