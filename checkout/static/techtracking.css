@@ -4,7 +4,25 @@
     padding: 0;
 }
 
+.small-margin-bottom {
+    margin: 0 0 5px 0;
+}
+
+.small-margin-top {
+    margin: 5px 0 0 0;
+}
+
 /* Bootstrap overrides */
+
+body {
+    font-family: 'Arimo', sans-serif;
+    margin-top: 75px;
+}
+
+.control-label {
+    font-weight: 500;
+    color: #666;
+}
 
 .table > tbody > tr > th {
     vertical-align: middle;
@@ -37,18 +55,6 @@
 }
 
 /* Custom classes */
-
-.body {
-    margin-top: 75px;
-}
-
-.small-margin-bottom {
-    margin: 0 0 5px 0;
-}
-
-.small-margin-top {
-    margin: 5px 0 0 0;
-}
 
 .user-info {
     padding: 3px 20px;
