@@ -7,11 +7,12 @@ DEFAULT_STORAGE_LOCATION = "Site Director's Office"
 
 
 class Movement:
-    def __init__(self, site_sku: SiteSku, units: int, origin: Classroom, destination: Classroom):
+    def __init__(self, site_sku: SiteSku, units: int, origin: Classroom, destination: Classroom, comment: str = None):
         self.site_sku: SiteSku = site_sku
         self.units: int = units
         self.origin: Classroom = origin
         self.destination: Classroom = destination
+        self.comment: str = comment
 
     def __str__(self) -> str:
         return "From {} move {}x {} to {}".format(self.origin.name, self.units, self.site_sku.sku.display_name, self.destination.name)
@@ -83,7 +84,8 @@ class MovementSchedule:
                             destination = reservation.classroom
 
                             if origin != destination:
-                                movements[period].append(Movement(site_sku, moved_units, origin, destination))
+                                movements[period].append(
+                                    Movement(site_sku, moved_units, origin, destination, reservation.comment))
 
                             postmove_units_by_location[destination] += moved_units
                             remaining_units -= moved_units
