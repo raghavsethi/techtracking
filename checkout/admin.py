@@ -7,14 +7,16 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week, Period
 
 
-class CheckoutAdminSite(AdminSite):
-    site_title = 'Aim High - Checkout System'
-
-    # Text to put in each page's <h1> (and above login form).
+class SuperuserAdminSite(AdminSite):
+    site_title = 'Aim High - Checkout System Admin'
     site_header = 'Aim High - Checkout System'
+    index_title = 'Superuser Administration'
 
-    # Text to put at the top of the admin index page.
-    index_title = 'Administration'
+
+class SiteDirectorAdminSite(AdminSite):
+    site_title = 'Aim High - Checkout System Admin'
+    site_header = 'Aim High - Checkout System'
+    index_title = "Site Director Administration"
 
 
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
@@ -225,14 +227,25 @@ class PeriodAdmin(admin.ModelAdmin):
 
         return qs.filter(site=request.user.site)
 
-admin_site = CheckoutAdminSite()
-admin_site.register(User, UserAdmin)
-admin_site.register(Classroom, ClassroomAdmin)
-admin_site.register(Reservation, ReservationAdmin)
-admin_site.register(SiteSku, SiteSkuAdmin)
-admin_site.register(SKU, SkuAdmin)
-admin_site.register(Team, TeamAdmin)
-admin_site.register(Week, WeekAdmin)
-admin_site.register(Site, SiteAdmin)
-admin_site.register(Period, PeriodAdmin)
-admin_site.register(Day)
+superuser_admin_site = SuperuserAdminSite(name='superuser_admin')
+superuser_admin_site.register(User, UserAdmin)
+superuser_admin_site.register(Classroom, ClassroomAdmin)
+superuser_admin_site.register(Reservation, ReservationAdmin)
+superuser_admin_site.register(SiteSku, SiteSkuAdmin)
+superuser_admin_site.register(SKU, SkuAdmin)
+superuser_admin_site.register(Team, TeamAdmin)
+superuser_admin_site.register(Week, WeekAdmin)
+superuser_admin_site.register(Site, SiteAdmin)
+superuser_admin_site.register(Period, PeriodAdmin)
+superuser_admin_site.register(Day)
+
+staff_admin_site = SiteDirectorAdminSite(name='staff_admin')
+staff_admin_site.register(User, UserAdmin)
+staff_admin_site.register(Classroom, ClassroomAdmin)
+staff_admin_site.register(Reservation, ReservationAdmin)
+staff_admin_site.register(SiteSku, SiteSkuAdmin)
+staff_admin_site.register(Team, TeamAdmin)
+staff_admin_site.register(Week, WeekAdmin)
+staff_admin_site.register(Site, SiteAdmin)
+staff_admin_site.register(Period, PeriodAdmin)
+
