@@ -27,6 +27,7 @@ def index(request):
 
     context = {
         "site": site,
+        "week": week,
         "username": user.email,
         "full_name": user.full_name,
         "week_schedule": week_schedule,
