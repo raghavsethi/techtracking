@@ -141,6 +141,7 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 AUTH_USER_MODEL = 'checkout.User'
+LOGIN_REDIRECT_URL = '/'
 
 LOGGING = {
     'version': 1,
