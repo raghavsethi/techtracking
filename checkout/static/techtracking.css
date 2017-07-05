@@ -6,10 +6,6 @@
 
 /* Bootstrap overrides */
 
-.table > tbody > tr > td {
-    vertical-align: middle;
-}
-
 .table > tbody > tr > th {
     vertical-align: middle;
 }
@@ -31,17 +27,39 @@
     color: #000;
 }
 
-.reservations {
-    display: block;
-    min-height: 50px;
+.reservation a:hover {
+    text-decoration: none;
+}
+
+.reserve {
+    margin: -9px -9px 5px -9px;
+}
+
+.reserve-button {
+    opacity: 0.5;
+}
+
+.reserve-button:hover {
+    opacity: 1;
 }
 
 .sku-reservation {
     padding:0 0 2px;
-    margin: 0 -5px 0 -5px;
+    margin: -1px -5px -3px -5px;
 }
 
-.sku-fixed {
-    min-width: 30px;
+.table-cell {
+    display: block;
+    min-height: 80px;
+    width: 100%;
+}
+
+.sku-room {
+    min-width: 35px;
+    display: inline-block;
+}
+
+.sku-units {
+    min-width: 25px;
     display: inline-block;
 }

@@ -48,12 +48,13 @@
 
 <div class="body">
   <div class="container">
-    <br />
-    <br />
+    <br/>
+    <br/>
     <div class="row">
       <div class="col-xs-2 text-left">
         {% if previous_week %}
-          <a href="/week/{{ previous_week }}" role="button" class="btn btn-default btn-lg">&laquo; Week {{ previous_week }}</a>
+          <a href="/week/{{ previous_week }}" role="button" class="btn btn-default btn-lg">&laquo;
+            Week {{ previous_week }}</a>
         {% endif %}
       </div>
       <div class="col-xs-8 text-center">
@@ -73,7 +74,7 @@
           <tr>
             <th></th>
             {% for calendar_day in calendar_days %}
-              <th class="text-center"  style="min-width: 150px; width:150px">
+              <th class="text-center" style="min-width: 150px; width:150px">
                 {{ calendar_day.date|date:"D, M d" }}
               </th>
             {% endfor %}
@@ -91,45 +92,61 @@
                     {% for period_details in work_day.periods %}
                       {% if period_details.period_number == period.0 %}
                         <td>
-                          <a role="button" data-toggle="collapse" href="#period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
-                          <div class="reservations">
-                            <div class="row">
-                            <div class="col-xs-12">
-                              {% for sku in period_details.skus %}
-                                {% for reservation in sku.reservations %}
-                                  <div class="row reservation" data-toggle="tooltip" data-placement="bottom"
-                                       title="{{ reservation.units }} units reserved by {{ reservation.teachers }} in classroom {{ reservation.classroom.name }}">
+                          <div class="table-cell">
+                            <div class="reserve">
+                              <div class="btn-group btn-group-justified">
+                                <a role="button" class="btn btn-default btn-sm reserve-button" data-toggle="collapse"
+                                   href="#period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
+                                  <span class="glyphicon glyphicon-plus"></span>&nbsp;Reserve
+                                </a>
+                              </div>
+                            </div>
+                            <div class="availability collapse"
+                                 id="period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
+                              <div class="row">
+                                <div class="col-xs-12">
+                                  <div class="row">
                                     <div class="col-xs-12">
-                                      <div class="row">
-                                        <div class="col-xs-12 sku-reservation">
-                                          <span class="label label-info sku-fixed">{{ reservation.classroom.name }}</span>
-                                          <span class="label label-default sku-fixed">{{ reservation.units }}</span>
-                                          {{ reservation.technology.sku.shortname }}
+                                      {% for sku in period_details.skus %}
+                                        <div class="row reservation">
+                                          <div class="col-xs-12 sku-reservation">
+                                            <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.0 }}">
+                                              <span class="label label-success sku-room">Free</span>
+                                              <span class="label label-default sku-units">{{ sku.free_count }}</span>
+                                              <small>{{ sku.site_sku.sku.shortname }}</small>
+                                            </a>
+                                          </div>
                                         </div>
-                                      </div>
+                                      {% endfor %}
                                     </div>
                                   </div>
-                                {% endfor %}
-                              {% endfor %}
-                            </div>
-                          </div>
-                          </div> <!-- /reservations -->
-                          </a>
-                          <div class="row free collapse" id="period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
-                            <div class="col-xs-12">
-                              {% for sku in period_details.skus %}
-                                <div class="row">
-                                  <div class="col-xs-12">
-                                    <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.0 }}">
-                                      <span class="label label-success sku-fixed">Free</span>
-                                      <span class="label label-default sku-fixed">{{ sku.free_count }}</span>
-                                      {{ sku.site_sku.sku.shortname }}
-                                    </a>
-                                  </div>
                                 </div>
-                              {% endfor %}
-                            </div>
-                          </div>
+                              </div>
+                            </div> <!-- /availability -->
+                            <div class="reservations">
+                              <div class="row">
+                                <div class="col-xs-12">
+                                  {% for sku in period_details.skus %}
+                                    {% for reservation in sku.reservations %}
+                                      <div class="row reservation" data-toggle="tooltip" data-placement="bottom"
+                                           title="{{ reservation.units }} units reserved by {{ reservation.teachers }} in classroom {{ reservation.classroom.name }}">
+                                        <div class="col-xs-12">
+                                          <div class="row">
+                                            <div class="col-xs-12 sku-reservation">
+                                            <span
+                                                class="label label-info sku-room">{{ reservation.classroom.name }}</span>
+                                              <span class="label label-default sku-units">{{ reservation.units }}</span>
+                                              <small>{{ reservation.technology.sku.shortname }}</small>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    {% endfor %}
+                                  {% endfor %}
+                                </div>
+                              </div>
+                            </div> <!-- /reservations -->
+                          </div> <!-- /table-cell -->
                         </td>
                       {% endif %}
                     {% endfor %}
@@ -151,9 +168,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script type="text/javascript">
-  $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-  })
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
 </script>
 </body>
 </html>
