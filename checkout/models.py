@@ -128,6 +128,9 @@ class Team(models.Model):
         if self.id is None:
             return "Unsaved teaching team"
 
+        if len(self.members.all()) == 0:
+            return "(empty team)"
+
         return self.members_str() + " (" + self.subject.__str__() + ")"
 
 
