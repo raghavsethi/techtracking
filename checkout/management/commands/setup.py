@@ -21,8 +21,8 @@ class Command(BaseCommand):
             self.stderr.write("No superusers found, please run 'python manage.py createsuperuser'")
             exit(1)
 
-        if len(superusers) > 1:
-            self.stdout.write('Multiple superusers are present, skipping step..')
+        if len(superusers) >= 1:
+            self.stdout.write('Superusers are present in the database, moving right along..')
             self.stdout.write('')
 
         sites: List[Site] = list(Site.objects.all())
@@ -30,6 +30,10 @@ class Command(BaseCommand):
             self.stdout.write('No sites present in database')
             site_name = input('Enter the name of any one site (e.g. Western Addition): ')
             sites = [Site.objects.create(name=site_name)]
+
+        if len(sites) >= 1:
+            self.stdout.write('Sites are present in the database, moving right along..')
+            self.stdout.write('')
 
         for superuser in superusers:
             if superuser.name is None or superuser.name == '':
@@ -49,7 +53,7 @@ class Command(BaseCommand):
             self.stdout.write('')
             Subject.objects.create(name=Subject.ACTIVITY_SUBJECT)
         else:
-            self.stdout.write("Default subject '{}' present in database, skipping..".format(Subject.ACTIVITY_SUBJECT))
+            self.stdout.write("Default subject '{}' present in database, moving right along..".format(Subject.ACTIVITY_SUBJECT))
             self.stdout.write('')
 
         self.stdout.write('Setup completed successfully!')
