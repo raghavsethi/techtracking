@@ -145,7 +145,7 @@ def reserve_request(request):
     existing_reservations: List[Reservation] = list(Reservation.objects.filter(
         site_sku=site_sku, date=request_date))
 
-    used_units: Dict[int, int] = {}
+    used_units: Dict[Period, int] = {}
     for period in sorted(user.site.period_set.all()):
         used_units[period] = 0
 
