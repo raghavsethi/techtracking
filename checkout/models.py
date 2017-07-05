@@ -135,6 +135,8 @@ class Period(models.Model):
 
 
 class UsagePurpose(models.Model):
+    OTHER_PURPOSE = "Other"
+
     purpose = models.CharField(max_length=100, help_text='e.g. Research (Google, Wikipedia, Wolfram Alpha etc.)')
 
     def __str__(self):

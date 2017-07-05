@@ -4,7 +4,7 @@ from typing import List
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from checkout.models import Site, User, Subject
+from checkout.models import Site, User, Subject, UsagePurpose
 
 
 def read_date(prompt: str) -> date:
@@ -54,6 +54,14 @@ class Command(BaseCommand):
             Subject.objects.create(name=Subject.ACTIVITY_SUBJECT)
         else:
             self.stdout.write("Default subject '{}' present in database, moving right along..".format(Subject.ACTIVITY_SUBJECT))
+            self.stdout.write('')
+
+        if UsagePurpose.objects.filter(purpose=UsagePurpose.OTHER_PURPOSE).first() is None:
+            self.stdout.write("Creating default purpose '{}'..".format(UsagePurpose.OTHER_PURPOSE))
+            self.stdout.write('')
+            UsagePurpose.objects.create(purpose=UsagePurpose.OTHER_PURPOSE)
+        else:
+            self.stdout.write("Default purpose '{}' present in database, moving right along..".format(UsagePurpose.OTHER_PURPOSE))
             self.stdout.write('')
 
         self.stdout.write('Setup completed successfully!')
