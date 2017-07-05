@@ -136,7 +136,7 @@
     </div>
     <div class="form-group">
       <div class="col-md-offset-2 col-xs-offset-3 col-md-5 col-xs-9">
-        <input type="submit" value="Reserve" class="btn btn-primary"/>
+        <input id="reserve_button" type="submit" value="Reserve" class="btn btn-primary"/>
       </div>
     </div>
   </form>
@@ -151,7 +151,12 @@
       $('#same_units_warning').hide()
     }
 
-    $('.period_checkbox').each(function(idx, checkbox) {
+    periods = $('.period_checkbox')
+    $('#reserve_button').removeClass('disabled')
+    var isValid = true;
+
+    for (var i = 0; i < periods.length; i++) {
+      var checkbox = periods[i]
       var isCheckboxChecked = checkbox.checked;
       var checkboxData = checkbox.id.split("_");
       var periodFree = parseInt(checkboxData[2]);
@@ -159,12 +164,19 @@
       var requestedUnits = parseInt($('#request_units').val());
 
       if (isCheckboxChecked && periodFree < requestedUnits) {
+        isValid = false;
         $('#period_' + periodId + '_error').show();
       }
       else {
         $('#period_' + periodId + '_error').hide();
       }
-    });
+    }
+
+    if (!isValid) {
+      $('#reserve_button').addClass('disabled')
+    }
+
+    return isValid;
   }
 
   function changeItem(event) {
