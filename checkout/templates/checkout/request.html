@@ -31,25 +31,31 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Requested Units</label>
       <div class="col-md-2 col-xs-9">
-        <input type="number" class="form-control" name="request_units" placeholder="0" min="1" pattern="[0-9]*" max="{{ free_units }}">
+        <input type="number" class="form-control" name="request_units" id="request_units" placeholder="0" min="1" pattern="[0-9]*" max="{{ free_units }}" oninput="checkValidReservation();">
       </div>
     </div>
     {% for period, free in free_units.items %}
       <div class="form-group">
         {% if forloop.first %}
           <label class="col-md-2 col-xs-3 control-label">Period</label>
-          <div class="checkbox col-md-10 col-xs-9">
+          <div class="checkbox col-md-5 col-xs-9">
             <label>
-              <input type="checkbox" name="period_{{ period.id }}" {% if period == selected_period %} checked {% endif %}/>
+              <input class="period_checkbox" type="checkbox" name="period_{{ period.id }}" id="period_{{ period.id }}_{{ free }}" {% if period == selected_period %} checked {% endif %} onclick="checkValidReservation();"/>
               {{ period.name }} <small>({{ free }} available)</small>
             </label>
+            <p class="bg-danger" id="period_{{ period.id }}_error" style="padding: 10px; display: none">
+              The requested number of units are not available in this period
+            </p>
           </div>
         {% else %}
-          <div class="checkbox col-md-10 col-xs-9 col-md-offset-2 col-xs-offset-3">
+          <div class="checkbox col-md-5 col-xs-9 col-md-offset-2 col-xs-offset-3">
             <label>
-              <input type="checkbox" name="period_{{ period.id }}" {% if period == selected_period %} checked {% endif %}/>
+              <input class="period_checkbox" type="checkbox" name="period_{{ period.id }}" id="period_{{ period.id }}_{{ free }}" {% if period == selected_period %} checked {% endif %} onclick="checkValidReservation();"/>
               {{ period.name }} <small>({{ free }} available)</small>
             </label>
+            <p class="bg-danger" id="period_{{ period.id }}_error" style="padding: 10px; display: none">
+              The requested number of units are not available in this period
+            </p>
           </div>
         {% endif %}
       </div>
@@ -79,6 +85,16 @@
       </div>
     </div>
     <div class="form-group">
+      <label class="col-md-2 col-xs-3 control-label">Same Units</label>
+      <div class="col-md-5 col-xs-9">
+        <input type="checkbox" id="same_units" onclick="checkValidReservation();"/>
+        Students need to use the same units over multiple reservations
+        <p class="bg-warning" id="same_units_warning" style="padding: 10px; display: none">
+          Please reserve all available units at site ({{ site_sku.units }}) for selected periods to guarantee that same units will be provided.
+        </p>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Comments</label>
       <div class="col-md-4 col-xs-9">
         <textarea class="form-control" name="comment" placeholder="Special instructions for volunteers or comments for other staff members"></textarea>
@@ -90,4 +106,30 @@
       </div>
     </div>
   </form>
+{% endblock %}
+
+{% block custom_js %}
+  function checkValidReservation() {
+    if ($('#same_units')[0].checked) {
+      $('#same_units_warning').show()
+    }
+    else {
+      $('#same_units_warning').hide()
+    }
+
+    $('.period_checkbox').each(function(idx, checkbox) {
+      var isCheckboxChecked = checkbox.checked;
+      var checkboxData = checkbox.id.split("_");
+      var periodFree = checkboxData[2];
+      var periodId = checkboxData[1];
+      var requestedUnits = $('#request_units').val();
+
+      if (isCheckboxChecked && periodFree < requestedUnits) {
+        $('#period_' + periodId + '_error').show();
+      }
+      else {
+        $('#period_' + periodId + '_error').hide();
+      }
+    });
+  }
 {% endblock %}
