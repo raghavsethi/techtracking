@@ -38,10 +38,17 @@ def order_candidates(reservation: Reservation, units_by_location: Dict[Classroom
     return candidates
 
 
+def get_periods_with_cleanup() -> List[Period]:
+    periods = sorted(list(Period.objects.all()))
+    periods.append(Period(pk=0, number=len(periods), name="Cleanup"))
+    return periods
+
+
 class MovementSchedule:
     def __init__(self, site: Site, date: date):
         movements: Dict[Period, List[Movement]] = OrderedDict()
-        periods = sorted(Period.objects.all())
+
+        periods: List[Period] = get_periods_with_cleanup()
         for period in periods:
             movements[period] = []
 

@@ -9,7 +9,7 @@ from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpRespon
 from django.shortcuts import render, redirect, get_object_or_404
 
 from checkout.models import *
-from checkout.movement_schedule import MovementSchedule
+from checkout.movement_schedule import MovementSchedule, get_periods_with_cleanup
 from checkout.reservation_schedule import ReservationSchedule
 from checkout.utils import error_redirect, success_redirect
 
@@ -316,7 +316,7 @@ def movements(request):
         "previous_week": previous_week,
         "next_week": next_week,
         "calendar_days": week.calendar_days(),
-        "periods": sorted(Period.objects.all()),
+        "periods": get_periods_with_cleanup(),
         "schedule": schedule,
     }
 
