@@ -68,7 +68,7 @@ class SiteSku(models.Model):
     def clean(self):
         super(SiteSku, self).clean()
         assigned_units = 0
-        for site_sku in self.site.sitesku_set.all():
+        for site_sku in self.sku.sitesku_set.all():
             if site_sku.site != self.site:
                 assigned_units += site_sku.units
 
