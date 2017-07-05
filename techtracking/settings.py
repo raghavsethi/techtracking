@@ -167,3 +167,5 @@ LOGGING = {
         },
     },
 }
+
+SESSION_COOKIE_AGE = 3628800  # 6 weeks
