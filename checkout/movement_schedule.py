@@ -7,15 +7,15 @@ DEFAULT_STORAGE_LOCATION = "Site Director's Office"
 
 
 class Movement:
-    def __init__(self, site_sku: SiteSku, units: int, origin: Classroom, destination: Classroom, comment: str = None):
-        self.site_sku: SiteSku = site_sku
+    def __init__(self, site_inventory: SiteInventory, units: int, origin: Classroom, destination: Classroom, comment: str = None):
+        self.site_inventory: SiteInventory = site_inventory
         self.units: int = units
         self.origin: Classroom = origin
         self.destination: Classroom = destination
         self.comment: str = comment
 
     def __str__(self) -> str:
-        return "From {} move {}x {} to {}".format(self.origin.name, self.units, self.site_sku.sku.display_name, self.destination.name)
+        return "From {} move {}x {} to {}".format(self.origin.name, self.units, self.site_inventory.inventory.display_name, self.destination.name)
 
     def __repr__(self):
         return self.__str__()
@@ -59,19 +59,19 @@ class MovementSchedule:
         for period in periods:
             movements[period] = []
 
-        site_skus = list(site.sitesku_set.all())
-        for site_sku in site_skus:
-            storage_location = site_sku.storage_location
+        items = list(site.siteinventory_set.all())
+        for item in items:
+            storage_location = item.storage_location
 
             storage_location = Classroom(pk=0, site=site, code="DEF", name=storage_location)
             origin = storage_location
 
             # Assumption: All items can be picked up at the beginning of the day at the storage location
-            units_by_location: Dict[Classroom, int] = {origin: site_sku.units}
+            units_by_location: Dict[Classroom, int] = {origin: item.units}
 
             for period in periods:
                 postmove_units_by_location: Dict[Classroom, int] = defaultdict(int)
-                reservations = list(Reservation.objects.filter(site_sku=site_sku, date=date, period=period).all())
+                reservations = list(Reservation.objects.filter(site_inventory=item, date=date, period=period).all())
                 sorted_reservations = sorted(reservations, key=lambda x: x.units, reverse=True)
 
                 for reservation in sorted_reservations:
@@ -87,7 +87,7 @@ class MovementSchedule:
 
                             if origin != destination:
                                 movements[period].append(
-                                    Movement(site_sku, moved_units, origin, destination, reservation.comment))
+                                    Movement(item, moved_units, origin, destination, reservation.comment))
 
                             postmove_units_by_location[destination] += moved_units
                             remaining_units -= moved_units
@@ -98,10 +98,10 @@ class MovementSchedule:
 
                             break
 
-                # Send all unused SKUs back to storage location
+                # Send all unused items back to storage location
                 for location, count in list(units_by_location.items()):
                     if location != storage_location:
-                        movements[period].append(Movement(site_sku, count, location, storage_location))
+                        movements[period].append(Movement(item, count, location, storage_location))
                     postmove_units_by_location[storage_location] += count
 
                 # Update units_by_location

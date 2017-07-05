@@ -12,20 +12,20 @@
   <div class="availability collapse" id="period_details_{{ work_day.date.isoformat }}_{{ period.id }}">
     <div class="row">
       <div class="col-xs-12">
-        {% for sku in period_details.skus %}
+        {% for item in period_details.items %}
           <div class="row">
             <div class="col-xs-12">
               <div class="pill-container pill-available">
-                <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
+                <a href="/request/?site_assignment={{ item.site_inventory.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
                   <div class="pill">
-                    {% if sku.free_count > 0 %}
-                      <span class="label label-success sku-room">Free</span>
-                      <span class="label label-default sku-units">{{ sku.free_count }}</span>
-                      <small>{{ sku.site_sku.sku.display_name }}</small>
+                    {% if item.free_count > 0 %}
+                      <span class="label label-success inventory-room">Free</span>
+                      <span class="label label-default inventory-units">{{ item.free_count }}</span>
+                      <small>{{ item.site_inventory.inventory.display_name }}</small>
                     {% else %}
-                      <span class="label label-danger sku-room">N/A</span>
-                      <span class="label label-default sku-units">{{ sku.free_count }}</span>
-                      <small>{{ sku.site_sku.sku.display_name }}</small>
+                      <span class="label label-danger inventory-room">N/A</span>
+                      <span class="label label-default inventory-units">{{ item.free_count }}</span>
+                      <small>{{ item.site_inventory.inventory.display_name }}</small>
                     {% endif %}
                   </div>
                 </a>
@@ -39,16 +39,16 @@
   </div> <!-- /availability -->
   <div class="row"> <!-- reservations -->
     <div class="col-xs-12">
-      {% for sku in period_details.skus %}
-        {% for reservation in sku.reservations %}
+      {% for item in period_details.items %}
+        {% for reservation in item.reservations %}
           <div class="row">
             <div class="col-xs-12">
               <div class="pill-container pill-reserved">
                 <a role="button" data-toggle="modal" data-target="#reservation_{{ reservation.pk }}">
                   <div class="pill">
-                    <span class="label label-info sku-room">{{ reservation.classroom.code }}</span>
-                    <span class="label label-default sku-units">{{ reservation.units }}</span>
-                    <small>{{ reservation.site_sku.sku.display_name }}</small>
+                    <span class="label label-info inventory-room">{{ reservation.classroom.code }}</span>
+                    <span class="label label-default inventory-units">{{ reservation.units }}</span>
+                    <small>{{ reservation.site_inventory.inventory.display_name }}</small>
                   </div>
                 </a>
               </div>

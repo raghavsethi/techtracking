@@ -7,7 +7,7 @@ from django.forms.utils import ErrorList
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats import base_formats
 
-from checkout.bulk_imports import TeamResource, UserResource, SKUResource, SKUTypeResource
+from checkout.bulk_imports import TeamResource, UserResource, InventoryItemResource, TechnologyCategoryResource
 from checkout.models import *
 
 
@@ -118,24 +118,24 @@ class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__name',)
     list_display = (
-        'date', 'site_sku__sku__display_name', 'period', 'classroom__code', 'units', 'team', 'site_sku__site')
-    list_filter = ('date', 'site_sku__sku__display_name')
+        'date', 'site_inventory__inventory__display_name', 'period', 'classroom__code', 'units', 'team', 'site_inventory__site')
+    list_filter = ('date', 'site_inventory__inventory__display_name')
 
     def classroom__code(self, reservation: Reservation):
         return reservation.classroom.code
 
-    def site_sku__site(self, reservation: Reservation):
-        return reservation.site_sku.site
-    site_sku__site.short_description = "Site"
+    def site_inventory__site(self, reservation: Reservation):
+        return reservation.site_inventory.site
+    site_inventory__site.short_description = "Site"
 
-    def site_sku__sku__display_name(self, reservation: Reservation):
-        return reservation.site_sku.sku.display_name
-    site_sku__sku__display_name.short_description = "SKU Name"
+    def site_inventory__inventory__display_name(self, reservation: Reservation):
+        return reservation.site_inventory.inventory.display_name
+    site_inventory__inventory__display_name.short_description = "Item Name"
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ReservationAdmin, self).get_form(request, obj, **kwargs)
         if not request.user.is_superuser:
-            form.base_fields['site_sku'].queryset = SiteSku.objects.filter(site=request.user.site)
+            form.base_fields['site_inventory'].queryset = SiteInventory.objects.filter(site=request.user.site)
             form.base_fields['classroom'].queryset = Classroom.objects.filter(site=request.user.site)
             form.base_fields['team'].queryset = Team.objects.filter(site=request.user.site)
             form.base_fields['creator'].queryset = User.objects.filter(site=request.user.site)
@@ -149,32 +149,32 @@ class ReservationAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        return qs.filter(site_sku__site=request.user.site)
+        return qs.filter(site_inventory__site=request.user.site)
 
 
-@admin.register(SiteSku)
-class SiteSkuAdmin(SuperuserOnlyAdmin):
-    list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
-    list_filter = ('sku__display_name',)
+@admin.register(SiteInventory)
+class SiteInventoryName(SuperuserOnlyAdmin):
+    list_display = ('inventory__display_name', 'units_display', 'site', 'storage_location')
+    list_filter = ('inventory__display_name',)
 
-    def sku__display_name(self, site_sku: SiteSku):
-        return site_sku.sku.display_name
-    sku__display_name.short_description = "SKU Name"
+    def inventory__display_name(self, site_inventory: SiteInventory):
+        return site_inventory.inventory.display_name
+    inventory__display_name.short_description = "Item Name"
 
-    def units_display(self, site_sku: SiteSku):
-        return site_sku.units
+    def units_display(self, site_inventory: SiteInventory):
+        return site_inventory.units
     units_display.short_description = "Assigned Units"
 
     def get_form(self, request, obj=None, **kwargs):
-        form = super(SiteSkuAdmin, self).get_form(request, obj, **kwargs)
+        form = super(SiteInventoryName, self).get_form(request, obj, **kwargs)
         if not request.user.is_superuser:
             form.base_fields['site'].disabled = True
-            form.base_fields['sku'].disabled = True
+            form.base_fields['inventory'].disabled = True
             form.base_fields['units'].disabled = True
         return form
 
     def get_queryset(self, request):
-        qs = super(SiteSkuAdmin, self).get_queryset(request)
+        qs = super(SiteInventoryName, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
 
@@ -187,20 +187,20 @@ class SiteSkuAdmin(SuperuserOnlyAdmin):
         return request.user.is_staff
 
 
-@admin.register(SKU)
-class SkuAdmin(ImportExportModelAdmin, SuperuserOnlyAdmin):
-    resource_class = SKUResource
+@admin.register(InventoryItem)
+class InventoryItemAdmin(ImportExportModelAdmin, SuperuserOnlyAdmin):
+    resource_class = InventoryItemResource
 
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
 
-    def total_units_display(self, sku: SKU):
-        return sku.units
+    def total_units_display(self, inventory: InventoryItem):
+        return inventory.units
     total_units_display.short_description = "Total Units"
 
-    def assigned_units_display(self, sku: SKU):
+    def assigned_units_display(self, inventory: InventoryItem):
         assigned_units: int = 0
-        for site_sku in sku.sitesku_set.all():
-            assigned_units += site_sku.units
+        for site_inventory in inventory.siteinventory_set.all():
+            assigned_units += site_inventory.units
 
         return assigned_units
     assigned_units_display.short_description = "Assigned Units"
@@ -367,13 +367,13 @@ class SiteAdmin(SuperuserOnlyAdmin):
 
     def reservations(self, site: Site):
         total: int = 0
-        for site_sku in site.sitesku_set.all():
-            total += site_sku.reservation_set.count()
+        for site_inventory in site.siteinventory_set.all():
+            total += site_inventory.reservation_set.count()
         return total
 
     def allocated(self, site: Site):
         return ", ".join(
-            ["{} ({})".format(site_sku.sku.display_name, site_sku.units) for site_sku in site.sitesku_set.all()])
+            ["{} ({})".format(site_inventory.inventory.display_name, site_inventory.units) for site_inventory in site.siteinventory_set.all()])
 
 
 @admin.register(Subject)
@@ -391,8 +391,8 @@ class UsagePurposeAdmin(SuperuserOnlyAdmin):
     pass
 
 
-@admin.register(SKUType)
-class SKUTypeAdmin(SuperuserOnlyAdmin, ImportExportModelAdmin):
-    resource_class = SKUTypeResource
+@admin.register(TechnologyCategory)
+class TechnologyCategoryAdmin(SuperuserOnlyAdmin, ImportExportModelAdmin):
+    resource_class = TechnologyCategoryResource
 
 admin.site.unregister(Group)

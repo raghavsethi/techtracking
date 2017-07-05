@@ -4,7 +4,7 @@ from django.utils.encoding import smart_text
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
-from checkout.models import Team, Subject, User, Site, SKU, SKUType
+from checkout.models import Team, Subject, User, Site, InventoryItem, TechnologyCategory
 
 SITE_PSEUDO_COLUMN = 'resolved_site'
 
@@ -143,18 +143,18 @@ class UserResource(resources.ModelResource):
         return original == instance
 
 
-class SKUResource(resources.ModelResource):
+class InventoryItemResource(resources.ModelResource):
     class Meta:
-        model = SKU
+        model = InventoryItem
         fields = ('id', 'type', 'model_identifier', 'display_name', 'units')
 
     type = fields.Field(
         column_name='type',
         attribute='type',
-        widget=ForeignKeyWidget(SKUType, 'name'))
+        widget=ForeignKeyWidget(TechnologyCategory, 'name'))
 
 
-class SKUTypeResource(resources.ModelResource):
+class TechnologyCategoryResource(resources.ModelResource):
     class Meta:
-        model = SKUType
+        model = TechnologyCategory
         fields = ('name',)

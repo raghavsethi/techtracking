@@ -108,7 +108,7 @@ def reserve_request(request):
     user: User = request.user
     request_date = datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
     selected_period: Period = get_object_or_404(Period, pk=request.GET.get('period'))
-    site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.GET.get('site_assignment'))
+    site_inventory: SiteInventory = get_object_or_404(SiteInventory, pk=request.GET.get('site_assignment'))
 
     if user.is_staff:
         teams = Team.objects.filter(site=user.site)
@@ -118,7 +118,7 @@ def reserve_request(request):
     if len(teams) == 0:
         logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
         new_team: Team = Team.objects.create(
-            site=site_sku.site,
+            site=site_inventory.site,
             subject=Subject.objects.get(name=Subject.ACTIVITY_SUBJECT))
 
         new_team.members = [user]
@@ -126,7 +126,7 @@ def reserve_request(request):
         teams = [new_team]
 
     existing_reservations: List[Reservation] = list(Reservation.objects.filter(
-        site_sku=site_sku, date=request_date))
+        site_inventory=site_inventory, date=request_date))
 
     used_units: Dict[Period, int] = {}
     for period in sorted(Period.objects.all()):
@@ -137,16 +137,16 @@ def reserve_request(request):
 
     free_units: Dict[Tuple[int, str], int] = {}
     for period, used in used_units.items():
-        free_units[period] = site_sku.units - used
+        free_units[period] = site_inventory.units - used
 
     context = {
         "sites": Site.objects.all(),
-        "site_sku": site_sku,
+        "site_inventory": site_inventory,
         "request_date": request_date,
         "teams": teams,
         "selected_period": selected_period,
         "free_units": free_units,
-        "classrooms": Classroom.objects.filter(site=site_sku.site),
+        "classrooms": Classroom.objects.filter(site=site_inventory.site),
         "purpose_list": UsagePurpose.objects.all(),
     }
 
@@ -158,7 +158,7 @@ def reserve_request(request):
 def reserve(request):
     user: User = request.user
     request_date = datetime.strptime(request.POST['request_date'], '%Y-%m-%d').date()
-    site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.POST['site_assignment_pk'])
+    site_inventory: SiteInventory = get_object_or_404(SiteInventory, pk=request.POST['site_inventory_pk'])
     team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
     purpose: UsagePurpose = get_object_or_404(UsagePurpose, pk=request.POST['purpose_pk'])
     collaborative: bool = 'collaborative' in request.POST
@@ -179,31 +179,31 @@ def reserve(request):
     classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom_pk'])
 
     if requested_units < 1:
-        return error_redirect(request, "You must request at least 1 unit of {}".format(site_sku.sku.display_name))
+        return error_redirect(request, "You must request at least 1 unit of {}".format(site_inventory.inventory.display_name))
 
     # First, validate all the reservations
     for period in selected_periods:
         existing_reservations: List[Reservation] = list(Reservation.objects.filter(
-            site_sku=site_sku, date=request_date, period=period))
+            site_inventory=site_inventory, date=request_date, period=period))
         used_units = 0
         for existing_reservation in existing_reservations:
             used_units += existing_reservation.units
-        free_units = site_sku.units - used_units
+        free_units = site_inventory.units - used_units
 
         if requested_units > free_units:
             return error_redirect(request, "Cannot reserve {} units of {} in {}, only {} are available".format(
-                requested_units, site_sku.sku.display_name, period.name, free_units))
+                requested_units, site_inventory.inventory.display_name, period.name, free_units))
 
     # Then, create them all. This works because this entire handler is atomic.
     reserved_periods: List[str] = []
     for period in selected_periods:
-        logger.info("[%s] Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
-                    request.user.email, team, site_sku, classroom, requested_units, request_date, period)
+        logger.info("[%s] Creating new reservation: Team: %s, Inventory: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+                    request.user.email, team, site_inventory, classroom, requested_units, request_date, period)
 
         try:
             Reservation.objects.create(
                 team=team,
-                site_sku=site_sku,
+                site_inventory=site_inventory,
                 classroom=classroom,
                 units=requested_units,
                 date=request_date,
@@ -215,12 +215,12 @@ def reserve(request):
         except IntegrityError:
             return error_redirect(request, "Failed to make reservation - another reservation by this team for {} "
                                            "in {} during {} already exists. Please delete the existing reservation and "
-                                           "try again".format(site_sku.sku.display_name, classroom.name, period.name))
+                                           "try again".format(site_inventory.inventory.display_name, classroom.name, period.name))
 
         reserved_periods.append(period.name)
 
     messages.success(request, "Reservation confirmed for {} unit(s) of {} in {}".format(
-        requested_units, site_sku.sku.display_name, ", ".join(reserved_periods)))
+        requested_units, site_inventory.inventory.display_name, ", ".join(reserved_periods)))
 
     # Figure out which week this was in
     weeks: List[Week] = sorted(list(request.user.site.week_set.all()))
@@ -331,18 +331,18 @@ def delete(request):
                               "delete it")
 
     reservation.delete()
-    logger.info("[%s] Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+    logger.info("[%s] Reservation deleted: Team: %s, Inventory: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
                 request.user.email,
                 reservation.team,
-                reservation.site_sku,
+                reservation.site_inventory,
                 reservation.classroom,
                 reservation.units,
                 reservation.date,
                 reservation.period)
 
+    inventory_name: str = reservation.site_inventory.inventory.display_name
     return success_redirect(request,
-                            "Deleted reservation for {} unit(s) of {}".format(reservation.units,
-                                                                              reservation.site_sku.sku.display_name),
+                            "Deleted reservation for {} unit(s) of {}".format(reservation.units, inventory_name),
                             "/reservations")
 
 
@@ -358,7 +358,7 @@ def export(request):
 
     site_teams: Dict[Site, int] = {}
     for reservation in Reservation.objects.all():
-        site: Site = reservation.site_sku.site
+        site: Site = reservation.site_inventory.site
 
         weeks: List[Week] = site.week_set.all()
         week_number = 0
@@ -379,8 +379,8 @@ def export(request):
             week_number,
             reservation.period.number,
             reservation.units,
-            reservation.site_sku.sku.type.name,
-            reservation.site_sku.sku.display_name,
+            reservation.site_inventory.inventory.type.name,
+            reservation.site_inventory.inventory.display_name,
             reservation.purpose.purpose,
             1 if reservation.collaborative else 0,
             site_teams[site]

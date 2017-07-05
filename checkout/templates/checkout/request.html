@@ -6,14 +6,14 @@
   <h2>Reserve Technology</h2>
   <hr />
   <form class="form-horizontal" action="{% url 'reserve' %}" method="post">
-    <input type="hidden" name="site_assignment_pk" value="{{ site_sku.pk }}">
+    <input type="hidden" name="site_inventory_pk" value="{{ site_inventory.pk }}">
     <input type="hidden" name="request_date" value="{{ request_date.isoformat }}">
     <input type="hidden" name="period" value="{{ period.0 }}">
     {% csrf_token %}
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Item Type</label>
       <div class="col-md-10 col-xs-9">
-        <p class="form-control-static">{{ site_sku.sku.display_name }} ({{ site_sku.sku.model_identifier }})</p>
+        <p class="form-control-static">{{ site_inventory.inventory.display_name }} ({{ site_inventory.inventory.model_identifier }})</p>
       </div>
     </div>
     <div class="form-group">
@@ -25,7 +25,7 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Units</label>
       <div class="col-md-10 col-xs-9">
-        <p class="form-control-static">{{ site_sku.units }} total units available at {{ request.user.site }}</p>
+        <p class="form-control-static">{{ site_inventory.units }} total units available at {{ request.user.site }}</p>
       </div>
     </div>
     <div class="form-group">
@@ -107,7 +107,7 @@
         <input type="checkbox" id="same_units" onclick="checkValidReservation();"/>
         Students need to use the same units over multiple reservations
         <p class="bg-warning" id="same_units_warning" style="padding: 10px; display: none">
-          Please reserve all available units at site ({{ site_sku.units }}) for selected periods to guarantee that same units will be provided.
+          Please reserve all available units at site ({{ site_inventory.units }}) for selected periods to guarantee that same units will be provided.
         </p>
       </div>
     </div>

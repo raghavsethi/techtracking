@@ -126,12 +126,12 @@ body {
     background-color: #f3fffa;
 }
 
-.sku-room {
+.inventory-room {
     min-width: 35px;
     display: inline-block;
 }
 
-.sku-units {
+.inventory-units {
     min-width: 25px;
     display: inline-block;
 }

@@ -20,18 +20,21 @@ from django.utils.translation import ugettext_lazy as _
 from checkout.user_manager import CheckoutUserManager
 
 
-class SKUType(models.Model):
+class TechnologyCategory(models.Model):
+    class Meta:
+        verbose_name_plural = 'Technology Categories'
+
     name = models.CharField(max_length=50, help_text='e.g. Laptop, Tablet, Projector')
 
     def __str__(self):
         return self.name
 
 
-class SKU(models.Model):
+class InventoryItem(models.Model):
     class Meta:
         verbose_name_plural = 'Inventory'
 
-    type = models.ForeignKey(SKUType)
+    type = models.ForeignKey(TechnologyCategory)
     model_identifier = models.CharField(
         max_length=200,
         help_text='e.g. Apple 13.3" MacBook Pro (Mid 2017, Space Gray)')
@@ -56,13 +59,13 @@ class Site(models.Model):
         return self.name
 
 
-class SiteSku(models.Model):
+class SiteInventory(models.Model):
     class Meta:
         verbose_name_plural = 'Site Inventory'
-        unique_together = (('site', 'sku'),)
+        unique_together = (('site', 'inventory'),)
 
     site = models.ForeignKey(Site, help_text='Which site these units are being assigned to')
-    sku = models.ForeignKey(SKU)
+    inventory = models.ForeignKey(InventoryItem)
     storage_location = models.CharField(
         max_length=100,
         null=True,
@@ -74,18 +77,18 @@ class SiteSku(models.Model):
         validators=[MinValueValidator(1)])
 
     def clean(self):
-        super(SiteSku, self).clean()
+        super(SiteInventory, self).clean()
         assigned_units = 0
-        for site_sku in self.sku.sitesku_set.all():
-            if site_sku.site != self.site:
-                assigned_units += site_sku.units
+        for item in self.inventory.siteinventory_set.all():
+            if item.site != self.site:
+                assigned_units += item.units
 
-        if (self.units + assigned_units) > self.sku.units:
+        if (self.units + assigned_units) > self.inventory.units:
             raise ValidationError(
-                'Cannot assign more units ({}) than available ({})'.format(self.units + assigned_units, self.sku.units))
+                'Cannot assign more units ({}) than available ({})'.format(self.units + assigned_units, self.inventory.units))
 
     def __str__(self):
-        return "{} - {} ({} units)".format(self.site, self.sku.display_name, self.units)
+        return "{} - {} ({} units)".format(self.site, self.inventory.display_name, self.units)
 
 
 class Classroom(models.Model):
@@ -157,10 +160,10 @@ class UsagePurpose(models.Model):
 @total_ordering
 class Reservation(models.Model):
     class Meta:
-        unique_together = (('team', 'site_sku', 'classroom', 'date', 'period'),)
+        unique_together = (('team', 'site_inventory', 'classroom', 'date', 'period'),)
 
     team = models.ForeignKey(Team)
-    site_sku = models.ForeignKey(SiteSku)
+    site_inventory = models.ForeignKey(SiteInventory)
     classroom = models.ForeignKey(Classroom)
     date = models.DateField()
     period = models.ForeignKey(Period)
@@ -180,12 +183,12 @@ class Reservation(models.Model):
         if self.period != other.period:
             return self.period < other.period
 
-        if self.site_sku != other.site_sku:
+        if self.site_inventory != other.site_inventory:
             return self.units < other.units
 
     def __str__(self):
         return "{} {} {} - {} {}".format(
-            self.period, self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
+            self.period, self.classroom.name, self.team, self.units, self.site_inventory.inventory.display_name)
 
 
 # Will not be visible in the admin UI by default

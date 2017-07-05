@@ -27,9 +27,9 @@
         <td>{{ reservation.team }}</td>
         <td>{{ reservation.units }}</td>
         <td>
-          {{ reservation.site_sku.sku.display_name }}
+          {{ reservation.site_inventory.inventory.display_name }}
           <br/>
-          <small class="text-muted">{{ reservation.site_sku.sku.model_identifier }}</small>
+          <small class="text-muted">{{ reservation.site_inventory.inventory.model_identifier }}</small>
         </td>
         <td>{{ reservation.classroom }}</td>
         <td class="text-right">
@@ -55,9 +55,9 @@
           <td>{{ reservation.team }}</td>
           <td>{{ reservation.units }}</td>
           <td>
-            {{ reservation.site_sku.sku.display_name }}
+            {{ reservation.site_inventory.inventory.display_name }}
             <br/>
-            <small class="text-muted">{{ reservation.site_sku.sku.model_identifier }}</small>
+            <small class="text-muted">{{ reservation.site_inventory.inventory.model_identifier }}</small>
           </td>
           <td>{{ reservation.classroom }}</td>
           <td class="text-right">
