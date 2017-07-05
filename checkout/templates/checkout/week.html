@@ -54,25 +54,25 @@
         {% for period in periods %}
           <tr>
             <th class="table-cell-period">
-              {{ period.1 }}
+              {{ period.name }}
             </th>
             {% for calendar_day in calendar_days %}
               {% for work_day in schedule %}
                 {% if work_day.date == calendar_day.date %}
                   {% for period_details in work_day.periods %}
-                    {% if period_details.period_number == period.0 %}
+                    {% if period_details.period == period %}
                       <td class="{% if calendar_day.date.isoformat == today %}table-cell-today{% endif %}">
                         <div class="table-cell">
                           <div class="reserve">
                             <div class="btn-group btn-group-justified">
                               <a role="button" class="btn btn-default btn-sm reserve-button" data-toggle="collapse"
-                                 href="#period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
+                                 href="#period_details_{{ work_day.date.isoformat }}_{{ period.id }}">
                                 <span class="glyphicon glyphicon-plus"></span>&nbsp;Reserve
                               </a>
                             </div>
                           </div>
                           <div class="availability collapse"
-                               id="period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
+                               id="period_details_{{ work_day.date.isoformat }}_{{ period.id }}">
                             <div class="row">
                               <div class="col-xs-12">
                                 <div class="row">
@@ -81,7 +81,7 @@
                                       <div class="row reservation">
                                         <div class="col-xs-12 sku-reservation">
                                           {% if sku.free_count > 0 %}
-                                            <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.0 }}">
+                                            <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
                                               <span class="label label-success sku-room">Free</span>
                                               <span class="label label-default sku-units">{{ sku.free_count }}</span>
                                               <small>{{ sku.site_sku.sku.display_name }}</small>

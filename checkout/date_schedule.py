@@ -12,7 +12,7 @@ class DateSchedule:
         self.periods: List[PeriodTechAvailability] = []
 
         site_skus: List[SiteSku] = list(self.site.sitesku_set.all())
-        periods: Tuple[Tuple[int, str]] = Reservation.PERIODS
+        periods: List[Period] = sorted(list(site.period_set.all()))
         assignments: List[Reservation] = \
             list(Reservation.objects.filter(site_sku__site=self.site, date=self.date).all())
 
@@ -21,7 +21,7 @@ class DateSchedule:
             for site_sku in site_skus:
                 site_sku_reservations = []
                 for assignment in assignments:
-                    if assignment.period == period[0] and assignment.site_sku == site_sku:
+                    if assignment.period == period and assignment.site_sku == site_sku:
                         site_sku_reservations.append(assignment)
 
                 period_sku_availability.append(PeriodSKUAvailability(site_sku, site_sku_reservations))
@@ -35,12 +35,11 @@ class DateSchedule:
 
 class PeriodTechAvailability:
     def __init__(self, period, skus):
-        self.period_number: int = period[0]
-        self.period_text: str = period[1]
+        self.period: Period = period
         self.skus: List[PeriodSKUAvailability] = skus
 
     def __str__(self):
-        return "{} - {}".format(self.period_text, ", ".join([sku.__str__() for sku in self.skus]))
+        return "{} - {}".format(self.period.number, ", ".join([sku.__str__() for sku in self.skus]))
 
 
 class PeriodSKUAvailability:

@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom
+from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom, Period
 from checkout.date_schedule import DateSchedule
 from checkout.utils import error_redirect, success_redirect
 
@@ -88,7 +88,7 @@ def site_week_schedule(request, site_id, week_number):
         "previous_week": None if week.week_number < 2 else (week.week_number - 1),
         "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
-        "periods": Reservation.PERIODS,
+        "periods": sorted(site.period_set.all()),
         "schedule": schedule,
     }
 
@@ -121,7 +121,7 @@ def week_schedule(request, week_number):
         "previous_week": None if week.week_number < 2 else (week.week_number - 1),
         "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
-        "periods": Reservation.PERIODS,
+        "periods": sorted(site.period_set.all()),
         "user": user,
         "schedule": schedule,
     }
@@ -133,7 +133,7 @@ def week_schedule(request, week_number):
 def reserve_request(request):
     user: User = request.user
     request_date = datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
-    selected_period = int(request.GET.get('period'))
+    selected_period: Period = get_object_or_404(Period, pk=request.GET.get('period'))
     site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.GET.get('site_assignment'))
 
     if user.is_staff:
@@ -152,22 +152,22 @@ def reserve_request(request):
         site_sku=site_sku, date=request_date))
 
     used_units: Dict[int, int] = {}
-    for period_number, period in Reservation.PERIODS:
-        used_units[period_number] = 0
+    for period in sorted(user.site.period_set.all()):
+        used_units[period] = 0
 
     for existing_reservation in existing_reservations:
         used_units[existing_reservation.period] += existing_reservation.units
 
     free_units: Dict[Tuple[int, str], int] = {}
     for period, used in used_units.items():
-        free_units[(period, Reservation.PERIODS[period - 1][1])] = site_sku.units - used
+        free_units[period] = site_sku.units - used
 
     context = {
         "aimhigh_site": site_sku.site,
         "site_sku": site_sku,
         "request_date": request_date,
         "teams": teams,
-        "selected_period": (selected_period, Reservation.PERIODS[selected_period - 1]),
+        "selected_period": selected_period,
         "free_units": free_units,
         "classrooms": Classroom.objects.filter(site=site_sku.site)
     }
@@ -178,16 +178,17 @@ def reserve_request(request):
 @login_required
 @transaction.atomic
 def reserve(request):
+    user: User = request.user
     request_date = datetime.strptime(request.POST['request_date'], '%Y-%m-%d').date()
     site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.POST['site_assignment_pk'])
     team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
 
     selected_periods = []
-    for period_number, period_name in Reservation.PERIODS:
-        checkbox_id = 'period_' + str(period_number)
+    for period in sorted(user.site.period_set.all()):
+        checkbox_id = 'period_' + str(period.id)
 
         if checkbox_id in request.POST:
-            selected_periods.append(period_number)
+            selected_periods.append(period)
 
     try:
         requested_units = int(request.POST['request_units'])
@@ -201,9 +202,9 @@ def reserve(request):
         return error_redirect(request, "You must request at least 1 unit of {}".format(site_sku.sku.display_name))
 
     # First, validate all the reservations
-    for period_number in selected_periods:
+    for period in selected_periods:
         existing_reservations: List[Reservation] = list(Reservation.objects.filter(
-            site_sku=site_sku, date=request_date, period=period_number))
+            site_sku=site_sku, date=request_date, period=period))
         used_units = 0
         for existing_reservation in existing_reservations:
             used_units += existing_reservation.units
@@ -211,13 +212,13 @@ def reserve(request):
 
         if requested_units > free_units:
             return error_redirect(request, "Cannot reserve {} units of {} in {}, only {} are available".format(
-                requested_units, site_sku.sku.display_name, Reservation.PERIODS[period_number - 1][1], free_units))
+                requested_units, site_sku.sku.display_name, period.name, free_units))
 
     # Then, create them all. This works because this entire handler is atomic.
     reserved_periods: List[str] = []
-    for period_number in selected_periods:
+    for period in selected_periods:
         logger.info("[%s] Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
-                    request.user.email, team, site_sku, classroom, requested_units, request_date, period_number)
+                    request.user.email, team, site_sku, classroom, requested_units, request_date, period)
 
         Reservation.objects.create(
             team=team,
@@ -225,10 +226,10 @@ def reserve(request):
             classroom=classroom,
             units=requested_units,
             date=request_date,
-            period=period_number,
+            period=period,
             comment=comment)
 
-        reserved_periods.append(Reservation.PERIODS[period_number - 1][1])
+        reserved_periods.append(period.name)
 
     messages.success(request, "Reservation confirmed for {} unit(s) of {} in {}".format(
         requested_units, site_sku.sku.display_name, ", ".join(reserved_periods)))
@@ -255,8 +256,7 @@ def reservations(request):
     context = {
         "aimhigh_site": user.site,
         "user": user,
-        "reservations": sorted(user_reservations),
-        "period_mapping": Reservation.PERIODS,
+        "reservations": sorted(user_reservations)
     }
 
     return render(request, "checkout/reservations.html", context)

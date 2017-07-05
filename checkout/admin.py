@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week
+from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week, Period
 
 
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
@@ -210,6 +210,19 @@ class SiteAdmin(admin.ModelAdmin):
             return qs
 
         return qs.filter(id=request.user.site.id)
+
+
+@admin.register(Period)
+class PeriodAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number', 'site')
+    list_filter = ('site',)
+
+    def get_queryset(self, request):
+        qs = super(PeriodAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site=request.user.site)
 
 
 admin.site.register(Day)

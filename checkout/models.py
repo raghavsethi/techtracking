@@ -61,24 +61,32 @@ class Team(models.Model):
 
 
 @total_ordering
+class Period(models.Model):
+    number = models.IntegerField()
+    name = models.CharField(max_length=12)
+    site = models.ForeignKey(Site)
+
+    def __eq__(self, other):
+        return self.name == other.name and self.number == other.number
+
+    def __lt__(self, other):
+        if self.site == other.site:
+            return self.number < other.number
+        return self.site.id < other.site.id
+
+    def __str__(self):
+        return self.site.__str__() + " - " + self.name + " (" + str(self.number) + ")"
+
+
+@total_ordering
 class Reservation(models.Model):
     team = models.ForeignKey(Team)
     site_sku = models.ForeignKey(SiteSku)
     classroom = models.ForeignKey(Classroom)
     units = models.IntegerField()
     date = models.DateField()
+    period = models.ForeignKey(Period)
     comment = models.CharField(max_length=1000, null=True, blank=True)
-
-    PERIODS = (
-        (1, 'Period 1'),
-        (2, 'Period 2'),
-        (3, 'Period 3'),
-        (4, 'Period 4'),
-        (5, 'Activity 1'),
-        (6, 'Activity 2'),
-    )
-
-    period = models.IntegerField(choices=PERIODS)
 
     def __eq__(self, other):
         return (
@@ -97,7 +105,7 @@ class Reservation(models.Model):
 
     def __str__(self):
         return "{} Class {} {} - {} {}".format(
-            self.get_period_display(), self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
+            self.period, self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
 
 
 @total_ordering

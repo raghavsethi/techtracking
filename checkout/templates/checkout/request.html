@@ -40,15 +40,15 @@
           <label class="col-md-2 col-xs-3 control-label">Period</label>
           <div class="checkbox col-md-10 col-xs-9">
             <label>
-              <input type="checkbox" name="period_{{ period.0 }}" {% if period.0 == selected_period.0 %} checked {% endif %}/>
-              {{ period.1 }} <small>({{ free }} available)</small>
+              <input type="checkbox" name="period_{{ period.id }}" {% if period == selected_period %} checked {% endif %}/>
+              {{ period.name }} <small>({{ free }} available)</small>
             </label>
           </div>
         {% else %}
           <div class="checkbox col-md-10 col-xs-9 col-md-offset-2 col-xs-offset-3">
             <label>
-              <input type="checkbox" name="period_{{ period.0 }}" {% if period.0 == selected_period.0 %} checked {% endif %}/>
-              {{ period.1 }} <small>({{ free }} available)</small>
+              <input type="checkbox" name="period_{{ period.id }}" {% if period == selected_period %} checked {% endif %}/>
+              {{ period.name }} <small>({{ free }} available)</small>
             </label>
           </div>
         {% endif %}
