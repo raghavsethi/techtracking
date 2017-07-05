@@ -13,38 +13,35 @@
         <th>Date</th>
         <th>Period</th>
         <th>Team</th>
-        <th>Units</th>
         <th>Technology</th>
         <th>Location</th>
         <th></th>
       </tr>
       </thead>
-    <tbody>
-    {% for reservation in future_reservations %}
-      <tr>
-        <td>{{ reservation.date|date:"l, M d" }}</td>
-        <td>{{ reservation.period.name }}</td>
-        <td>{{ reservation.team }}</td>
-        <td>{{ reservation.units }}</td>
-        <td>
-          {{ reservation.site_inventory.inventory.display_name }}
-          <br/>
-          <small class="text-muted">{{ reservation.site_inventory.inventory.model_identifier }}</small>
-        </td>
-        <td>{{ reservation.classroom }}</td>
-        <td class="text-right">
-          <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
-                  data-target="#reservation_delete_{{ reservation.pk }}"><span class="glyphicon glyphicon-trash"></span>
-          </button>
-
-          {% include "checkout/delete_modal.html" %}
-
-        </td>
-      </tr>
+      <tbody>
+      {% for reservation in future_reservations %}
+        <tr>
+          <td>{{ reservation.date|date:"l, M d" }}</td>
+          <td>{{ reservation.period.name }}</td>
+          <td>{{ reservation.team.members_str }}</td>
+          <td>
+            {{ reservation.units }}x {{ reservation.site_inventory.inventory.display_name }}
+            <br/>
+            <small class="text-muted">{{ reservation.site_inventory.inventory.model_identifier }}</small>
+          </td>
+          <td>{{ reservation.classroom.name }}</td>
+          <td class="text-right">
+            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                    data-target="#reservation_delete_{{ reservation.pk }}"><span
+                class="glyphicon glyphicon-trash"></span>
+            </button>
+            {% include "checkout/delete_modal.html" %}
+          </td>
+        </tr>
       {% endfor %}
       <tr style="background-color: #fff">
         <td colspan="7">
-          <br />
+          <br/>
           <h4>Past Reservations</h4>
         </td>
       </tr>
@@ -52,22 +49,19 @@
         <tr>
           <td>{{ reservation.date|date:"l, M d" }}</td>
           <td>{{ reservation.period.name }}</td>
-          <td>{{ reservation.team }}</td>
-          <td>{{ reservation.units }}</td>
+          <td>{{ reservation.team.members_str }}</td>
           <td>
-            {{ reservation.site_inventory.inventory.display_name }}
+            {{ reservation.units }}x {{ reservation.site_inventory.inventory.display_name }}
             <br/>
             <small class="text-muted">{{ reservation.site_inventory.inventory.model_identifier }}</small>
           </td>
-          <td>{{ reservation.classroom }}</td>
+          <td>{{ reservation.classroom.name }}</td>
           <td class="text-right">
             <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
                     data-target="#reservation_delete_{{ reservation.pk }}"><span
                 class="glyphicon glyphicon-trash"></span>
             </button>
-
             {% include "checkout/delete_modal.html" %}
-
           </td>
         </tr>
       {% endfor %}

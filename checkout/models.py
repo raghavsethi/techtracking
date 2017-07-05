@@ -121,11 +121,14 @@ class Team(models.Model):
     members = models.ManyToManyField(settings.AUTH_USER_MODEL)
     subject = models.ForeignKey(Subject)
 
+    def members_str(self):
+        return ", ".join([member.name for member in self.members.all()])
+
     def __str__(self):
         if self.id is None:
             return "Unsaved teaching team"
 
-        return ", ".join([member.name for member in self.members.all()]) + " (" + self.subject.__str__() + ")"
+        return self.members_str() + " (" + self.subject.__str__() + ")"
 
 
 @total_ordering
