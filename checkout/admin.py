@@ -10,7 +10,6 @@ from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day,
 admin.site.register(SKU)
 admin.site.register(Site)
 admin.site.register(SiteSku)
-admin.site.register(Classroom)
 admin.site.register(Team)
 admin.site.register(Reservation)
 admin.site.register(Day)
@@ -91,4 +90,12 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('email',)
     filter_horizontal = ()
 
+
+class ClassroomAdmin(admin.ModelAdmin):
+    search_fields = ('code', 'name', 'site__name',)
+    list_display = ('code', 'name', 'site')
+    list_filter = ('site',)
+
+
 admin.site.register(User, UserAdmin)
+admin.site.register(Classroom, ClassroomAdmin)
