@@ -7,7 +7,11 @@
                 <li>{{ period.period_text }}</li>
                 <ul>
                     {% for sku in period.skus %}
-                        <li>{{ sku.site_sku.sku.shortname }} - Free {{ sku.free_count }} (of {{ sku.site_sku.units }})</li>
+                        {% if sku.free_count == sku.site_sku.units %}
+                            <li>{{ sku.site_sku.sku.shortname }} - All available</li>
+                        {% else %}
+                            <li>{{ sku.site_sku.sku.shortname }} - Free {{ sku.free_count }} (of {{ sku.site_sku.units }})</li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             {% endfor %}
