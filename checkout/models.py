@@ -3,7 +3,12 @@ from typing import List
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMultiAlternatives
 from django.db import models
+from django.template import loader
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
 from checkout.user_manager import CheckoutUserManager
@@ -202,5 +207,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.display_name
 
+    def __eq__(self, other):
+        return self.email == other.email and self.display_name == other.display_name and self.site == other.site
+
     def __str__(self):
         return "{} - {}".format(self.email, self.site)
+
+    def send_welcome_email(self):
+        """
+        Generates a one-use only link for creating a password and sends to the user's email.
+        """
+        from_email = None
+        domain = 'localhost:8000'
+        use_https = False
+        # TODO: Configure properly
+
+        context = {
+            'user': self,
+            'domain': domain,
+            'uid': urlsafe_base64_encode(force_bytes(self.email)),
+            'token': default_token_generator.make_token(self),
+            'protocol': 'https' if use_https else 'http',
+            # TODO: Add help link
+        }
+
+        body = loader.render_to_string('registration/new_user_email.html', context)
+        EmailMultiAlternatives('Welcome to the Aim High checkout system!', body, from_email, [self.email]).send()

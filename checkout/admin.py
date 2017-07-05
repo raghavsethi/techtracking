@@ -72,6 +72,16 @@ class UserChangeForm(forms.ModelForm):
 class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     resource_class = UserResource
 
+    def send_welcome_email(self, request, queryset):
+        users: List[User] = list(queryset)
+        for user in users:
+            user.send_welcome_email()
+
+        self.message_user(request, "{} users were sent welcome emails.".format(len(users)))
+    send_welcome_email.short_description = 'Send welcome email'
+
+    actions = [send_welcome_email]
+
     # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm

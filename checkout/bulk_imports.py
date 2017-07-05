@@ -88,3 +88,10 @@ class UserResource(resources.ModelResource):
         if not user.is_superuser:
             if row['site'] != user.site.name:
                 raise ValueError("Cannot import users for site '{}', only '{}'".format(row['site'], user.site))
+
+    def skip_row(self, instance, original):
+        return original == instance
+
+    def after_save_instance(self, user: User, using_transactions, dry_run):
+        if not dry_run and not user.has_usable_password():
+                user.send_welcome_email()
