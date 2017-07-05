@@ -22,10 +22,12 @@ class Site(models.Model):
 
 
 class SiteAssignment(models.Model):
+    # TODO: Rename SiteAssignment to SiteSKU
+    # TODO: add constraints so that only one of these can exist per site/sku pair
     site = models.ForeignKey(Site)
     sku = models.ForeignKey(SKU)
 
-    # need constraints here to make sure the sum cannot exceed total_units
+    # TODO: add constraints here to make sure the sum cannot exceed total_units
     units = models.IntegerField()
 
     def __str__(self):
@@ -45,30 +47,51 @@ class TeachingTeam(models.Model):
     team = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     def __str__(self):
-        return ", ".join([member.username for member in self.team.all()])
+        return ", ".join([member.short_name for member in self.team.all()])
 
 
 class TechnologyAssignment(models.Model):
+    site = models.ForeignKey(Site)
     teachers = models.ForeignKey(TeachingTeam)
     technology = models.ForeignKey(SiteAssignment)
     classroom = models.ForeignKey(Classroom)
     units = models.IntegerField()
     date = models.DateField()
 
-    PERIOD_CHOICES = (
+    PERIODS = (
         (1, 'Period 1'),
         (2, 'Period 2'),
         (3, 'Period 3'),
         (4, 'Period 4'),
-        (5, 'Activity 1h'),
-        (6, 'Activity 2h'),
+        (5, 'Activity 1'),
+        (6, 'Activity 2'),
     )
 
-    period = models.IntegerField(choices=PERIOD_CHOICES)
+    period = models.IntegerField(choices=PERIODS)
 
     def __str__(self):
-        return "{} {} - {} {}".format(
-            self.classroom, self.teachers, self.units, self.technology.sku.shortname)
+        return "{} Class {} {} - {} {}".format(
+            self.get_period_display(), self.classroom.name, self.teachers, self.units, self.technology.sku.shortname)
+
+
+# Need to figure out how to autogenerate these
+class Day(models.Model):
+    date = models.DateField(unique=True)
+
+    def __str__(self):
+        return self.date.isoformat()
+
+
+# Will not be visible in the admin UI by default
+class Week(models.Model):
+    site = models.ForeignKey(Site)
+    week_number = models.IntegerField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    days = models.ManyToManyField(Day)
+
+    def __str__(self):
+        return "{} - Week {} ({} - {})".format(self.site, self.week_number, self.start_date, self.end_date)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -105,6 +128,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         if self.full_name :
-            return self.full_name + " (" + self.email + ")"
+            return "{} ({}) - {}".format(self.full_name, self.email, self.site)
         else:
-            return self.email
+            return "{} - {}".format(self.email, self.site)

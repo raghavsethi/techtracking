@@ -1,0 +1,19 @@
+{% if week_schedule %}
+    <ul>
+    {% for date_schedule in week_schedule %}
+        <li>{{ date_schedule.date }}</li>
+        <ul>
+            {% for period in date_schedule.periods %}
+                <li>{{ period.period_text }}</li>
+                <ul>
+                    {% for sku in period.skus %}
+                        <li>{{ sku.site_sku.sku.shortname }} - Free {{ sku.free_count }} (of {{ sku.site_sku.units }})</li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Schedule is not available.</p>
+{% endif %}
