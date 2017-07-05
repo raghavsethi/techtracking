@@ -154,12 +154,16 @@ class ReservationAdmin(admin.ModelAdmin):
 
 @admin.register(SiteInventory)
 class SiteInventoryName(SuperuserOnlyAdmin):
-    list_display = ('inventory__display_name', 'units_display', 'site', 'storage_location')
-    list_filter = ('inventory__display_name',)
+    list_display = ('inventory__display_name', 'inventory__type__name', 'units_display', 'site', 'storage_location')
+    list_filter = ('inventory__type__name', 'inventory__display_name')
 
     def inventory__display_name(self, site_inventory: SiteInventory):
         return site_inventory.inventory.display_name
     inventory__display_name.short_description = "Item Name"
+
+    def inventory__type__name(self, site_inventory: SiteInventory):
+        return site_inventory.inventory.type.name
+    inventory__type__name.short_description = "Category"
 
     def units_display(self, site_inventory: SiteInventory):
         return site_inventory.units
@@ -391,8 +395,13 @@ class UsagePurposeAdmin(SuperuserOnlyAdmin):
     pass
 
 
+# noinspection PyMethodMayBeStatic
 @admin.register(TechnologyCategory)
 class TechnologyCategoryAdmin(SuperuserOnlyAdmin, ImportExportModelAdmin):
     resource_class = TechnologyCategoryResource
+    list_display = ('name', 'items')
+
+    def items(self, category: TechnologyCategory):
+        return ", ".join([item.display_name for item in category.inventoryitem_set.all()])
 
 admin.site.unregister(Group)
