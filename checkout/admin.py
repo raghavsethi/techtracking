@@ -9,7 +9,6 @@ from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day,
 
 admin.site.register(Site)
 admin.site.register(Day)
-admin.site.register(Week)
 admin.site.unregister(Group)
 
 
@@ -158,9 +157,22 @@ class TeamAdmin(admin.ModelAdmin):
     team_display.short_description = "Team"
 
 
+# noinspection PyMethodMayBeStatic
+class WeekAdmin(admin.ModelAdmin):
+    list_display = ('site_week', 'start_date', 'end_date', 'working_days')
+    list_filter = ('site',)
+
+    def working_days(self, week: Week):
+        return len(week.days.all())
+
+    def site_week(self, week: Week):
+        return week.site.name + " - Week " + str(week.week_number)
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Classroom, ClassroomAdmin)
 admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(SiteSku, SiteSkuAdmin)
 admin.site.register(SKU, SkuAdmin)
 admin.site.register(Team, TeamAdmin)
+admin.site.register(Week, WeekAdmin)
