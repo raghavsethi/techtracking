@@ -98,21 +98,21 @@
                                 {% for sku in period_details.skus %}
                                   {% for reservation in sku.reservations %}
                                     <div class="row reservation">
-                                      <div class="col-xs-12">
-                                        <div class="row">
-                                          <div class="col-xs-12 sku-reservation">
-                                            <a role="button" data-toggle="modal"
-                                               data-target="#reservation_{{ reservation.pk }}">
+                                      <a role="button" data-toggle="modal"
+                                         data-target="#reservation_{{ reservation.pk }}">
+                                        <div class="col-xs-12">
+                                          <div class="row">
+                                            <div class="col-xs-12 sku-reservation">
                                               <span
                                                   class="label label-info sku-room">{{ reservation.classroom.code }}</span>
                                               <span class="label label-default sku-units">{{ reservation.units }}</span>
                                               <small>{{ reservation.site_sku.sku.display_name }}</small>
-                                            </a>
-                                            {% include "checkout/popover_modal.html" %}
-                                            {% include "checkout/delete_modal.html" %}
+                                            </div>
                                           </div>
-                                        </div>
-                                      </div>
+                                      </a>
+                                      {% include "checkout/popover_modal.html" %}
+                                      {% include "checkout/delete_modal.html" %}
+                                    </div>
                                     </div>
                                   {% endfor %}
                                 {% endfor %}

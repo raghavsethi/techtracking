@@ -39,7 +39,6 @@
     line-height: 1;
     white-space: nowrap;
     vertical-align: baseline;
-    padding: 0.2em 0.6em 0.3em;
     border-radius: 0.25em;
     background-color: #dddddd;
     margin: 0 0 5px 0;
@@ -63,8 +62,7 @@
 }
 
 .sku-reservation {
-    padding:0 0 2px;
-    margin: -1px -5px -3px -5px;
+    padding: 4px 5px 5px 5px;
 }
 
 .table-cell {
