@@ -133,7 +133,11 @@ def reserve_request(request):
     request_date = datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
     period_number = int(request.GET.get('period'))
     site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.GET.get('site_assignment'))
-    teams: List[Team] = Team.objects.filter(team__email=user.email).all()
+
+    if user.is_staff:
+        teams = Team.objects.filter(site=user.site)
+    else:
+        teams: List[Team] = Team.objects.filter(team__email=user.email).all()
 
     if len(teams) == 0:
         logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
