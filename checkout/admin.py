@@ -8,7 +8,6 @@ from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day,
 
 
 admin.site.register(Site)
-admin.site.register(Team)
 admin.site.register(Day)
 admin.site.register(Week)
 admin.site.unregister(Group)
@@ -148,8 +147,19 @@ class SkuAdmin(admin.ModelAdmin):
     assigned_units_display.short_description = "Assigned Units"
 
 
+class TeamAdmin(admin.ModelAdmin):
+    search_fields = ('team__display_name',)
+    list_display = ('team_display', 'site')
+    list_filter = ('site',)
+
+    def team_display(self, team: Team):
+        return team.__str__()
+    team_display.short_description = "Team"
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Classroom, ClassroomAdmin)
 admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(SiteSku, SiteSkuAdmin)
 admin.site.register(SKU, SkuAdmin)
+admin.site.register(Team, TeamAdmin)
