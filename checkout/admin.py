@@ -116,7 +116,8 @@ class ClassroomAdmin(admin.ModelAdmin):
 class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__name',)
-    list_display = ('date', 'site_sku__sku__display_name', 'classroom__code', 'units', 'team', 'site_sku__site')
+    list_display = (
+        'date', 'site_sku__sku__display_name', 'period', 'classroom__code', 'units', 'team', 'site_sku__site')
     list_filter = ('date', 'site_sku__sku__display_name')
 
     def classroom__code(self, reservation: Reservation):

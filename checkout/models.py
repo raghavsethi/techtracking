@@ -135,7 +135,7 @@ class Period(models.Model):
         return self.number < other.number
 
     def __str__(self):
-        return self.name + " (" + str(self.number) + ")"
+        return self.name
 
 
 class UsagePurpose(models.Model):
