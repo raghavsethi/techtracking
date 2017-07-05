@@ -33,7 +33,7 @@ def index(request):
     context = {
         "site": site,
         "week": week,
-        "days": days_in_week,
+        "calendar_days": days_in_week,  # TODO: make this all calendar days in week
         "periods": TechnologyAssignment.PERIODS,
         "username": user.email,
         "full_name": user.full_name,

@@ -44,7 +44,7 @@ class PeriodTechAvailability:
 
 
 class PeriodSKUAvailability:
-    def __init__(self, site_sku, reservations):
+    def __init__(self, site_sku: SiteAssignment, reservations: List[TechnologyAssignment]):
         self.site_sku: SiteAssignment = site_sku
         self.reservations: List[TechnologyAssignment] = reservations
 
