@@ -242,8 +242,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Generates a one-use only link for creating a password and sends to the user's email.
         """
-        from_email = None
-        domain = 'localhost:8000'
+        from_email = 'raghavsethi.rs@gmail.com'
+        domain = 'aimhigh-checkout.herokuapp.com'
         use_https = False
         # TODO: Configure properly
 
