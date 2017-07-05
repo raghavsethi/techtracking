@@ -94,6 +94,12 @@ class ClassroomAdmin(admin.ModelAdmin):
     search_fields = ('code', 'name', 'site__name',)
     list_display = ('code', 'name', 'site')
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ClassroomAdmin, self).get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['site'].queryset = Site.objects.filter(pk=request.user.site.pk)
+        return form
+
     def has_module_permission(self, request):
         return request.user.is_staff
 
@@ -123,6 +129,15 @@ class ReservationAdmin(admin.ModelAdmin):
     def site_sku__sku__display_name(self, reservation: Reservation):
         return reservation.site_sku.sku.display_name
     site_sku__sku__display_name.short_description = "SKU Name"
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ReservationAdmin, self).get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['site_sku'].queryset = SiteSku.objects.filter(site=request.user.site)
+            form.base_fields['classroom'].queryset = Classroom.objects.filter(site=request.user.site)
+            form.base_fields['team'].queryset = Team.objects.filter(site=request.user.site)
+            form.base_fields['creator'].queryset = User.objects.filter(site=request.user.site)
+        return form
 
     def has_module_permission(self, request):
         return request.user.is_staff
@@ -207,6 +222,7 @@ class TeamAdmin(ImportExportModelAdmin):
         form = super(TeamAdmin, self).get_form(request, obj, **kwargs)
         if not request.user.is_superuser:
             form.base_fields['site'].queryset = Site.objects.filter(pk=request.user.site.pk)
+            form.base_fields['members'].queryset = User.objects.filter(site=request.user.site)
         return form
 
     def get_queryset(self, request):
