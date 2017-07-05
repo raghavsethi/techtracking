@@ -53,6 +53,10 @@
           <li {% if request.path == url_index %} class="active"{% endif %}>
             <a href="{{ url_index }}">Schedule</a>
           </li>
+          {% url 'reservations' as url_reservations %}
+          <li {% if request.path == url_reservations %} class="active"{% endif %}>
+            <a href="{{ url_reservations }}">Reservations</a>
+          </li>
         {% endif %}
       </ul>
       {% if user.site %}

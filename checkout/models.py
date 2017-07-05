@@ -63,6 +63,7 @@ class Team(models.Model):
         # return ", ".join([member.display_name for member in self.team.all()])
 
 
+@total_ordering
 class Reservation(models.Model):
     team = models.ForeignKey(Team)
     site_sku = models.ForeignKey(SiteSku)
@@ -80,6 +81,21 @@ class Reservation(models.Model):
     )
 
     period = models.IntegerField(choices=PERIODS)
+
+    def __eq__(self, other):
+        return (
+            self.team == other.team and self.site_sku == other.site_sku and self.classroom == other.classroom and
+            self.units == other.units and self.date == other.date and self.period == other.period)
+
+    def __lt__(self, other):
+        if self.date != other.date:
+            return self.date < other.date
+
+        if self.period != other.period:
+            return self.period < other.period
+
+        if self.site_sku != other.site_sku:
+            return self.units < other.units
 
     def __str__(self):
         return "{} Class {} {} - {} {}".format(

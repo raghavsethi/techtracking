@@ -1,0 +1,68 @@
+{% extends "common/base.html" %}
+
+{% block title %} Reserve {% endblock %}
+
+{% block content %}
+  <h2>My Reservations</h2>
+  <hr/>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Period</th>
+      <th>Team</th>
+      <th>Technology</th>
+      <th>Units</th>
+      <th>Location</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for reservation in reservations %}
+      <tr>
+        <td>{{ reservation.date|date:"M d, Y - l" }}</td>
+        <td>{{ reservation.period }}</td>
+        <td>{{ reservation.team }}</td>
+        <td>{{ reservation.site_sku.sku.display_name }} ({{ reservation.site_sku.sku.model_identifier }})</td>
+        <td>{{ reservation.units }}</td>
+        <td>{{ reservation.classroom }}</td>
+        <td class="text-right">
+          <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                  data-target="#reservation_{{ reservation.pk }}"><span class="glyphicon glyphicon-trash"></span>
+          </button>
+          <div class="modal fade text-left" role="dialog" id="reservation_{{ reservation.pk }}" aria-labelledby="reservation_label_{{ reservation.pk }}">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                  <h3 class="modal-title" id="reservation_label_{{ reservation.pk }}">Delete reservation?</h3>
+                </div>
+                <div class="modal-body">
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <p>
+                        Are you sure you want to delete your reservation for {{ reservation.units }}x {{ reservation.site_sku.sku.display_name }}?
+                      </p>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <form action="{% url 'delete' %}" method="post">
+                        <input type="hidden" name="reservation_pk" value="{{ reservation.pk }}">
+                        {% csrf_token %}
+                        <input type="submit" value="Confirm delete" class="btn btn-danger"/>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

@@ -123,3 +123,29 @@ def reserve(request):
         team=team, site_sku=site_sku, classroom=classroom, units=units, date=request_date, period=period_number)
 
     return redirect('index')
+
+
+@login_required
+def reservations(request):
+    user: User = request.user
+
+    teams: List[Team] = Team.objects.filter(team__email=user.email).all()
+    user_reservations: List[Reservation] = []
+
+    for team in teams:
+        user_reservations.extend(Reservation.objects.filter(team=team))
+
+    context = {
+        "user": user,
+        "reservations": sorted(user_reservations)
+    }
+
+    return render(request, "checkout/reservations.html", context)
+
+
+@login_required
+def delete(request):
+    reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
+    reservation.delete()
+
+    return redirect('reservations')

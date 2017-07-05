@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^week/(?P<week_number>[0-9]+)$', checkout.views.week_schedule, name='week_schedule'),
     url(r'^request/', checkout.views.reserve_request, name='reserve_request'),
     url(r'^reserve/', checkout.views.reserve, name='reserve'),
+    url(r'^reservations/', checkout.views.reservations, name='reservations'),
+    url(r'^delete/', checkout.views.delete, name='delete'),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('django.contrib.auth.urls')),
 ]
