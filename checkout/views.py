@@ -4,6 +4,7 @@ from datetime import datetime
 from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom
 from checkout.date_schedule import DateSchedule
@@ -122,6 +123,7 @@ def reserve(request):
     Reservation.objects.create(
         team=team, site_sku=site_sku, classroom=classroom, units=units, date=request_date, period=period_number)
 
+    messages.success(request, "Reservation confirmed for {} unit(s) of {}".format(units, site_sku.sku.display_name))
     return redirect('index')
 
 
@@ -148,4 +150,5 @@ def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
     reservation.delete()
 
+    messages.success(request, "Reservation for {} unit(s) of {} was deleted".format(reservation.units, reservation.site_sku.sku.display_name))
     return redirect('reservations')
