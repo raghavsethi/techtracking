@@ -1,9 +1,16 @@
 {% extends "checkout/week.html" %}
 {% block title %} Movements {% endblock %}
 {% block cell %}
-  <ol>
   {% for movement in period_details.movements %}
-    <li>{{ movement }}</li>
+    <div class="row reservation">
+      <div class="col-xs-12 sku-reservation">
+        <span class="label label-default sku-units">{{ movement.units }}</span>
+        <small>{{ movement.site_sku.sku.display_name }}</small>
+        <hr style="margin-top:5px; margin-bottom: 5px"/>
+        <div class="text-left"><small>{{ movement.origin.name }}</small></div>
+        <div class="text-center"><small>&#8600;</small></div>
+        <div class="text-right"><small>{{ movement.destination.name }}</small></div>
+      </div>
+    </div>
   {% endfor %}
-  </ol>
 {% endblock %}
