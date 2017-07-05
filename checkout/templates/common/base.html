@@ -32,7 +32,6 @@
 </head>
 
 <body>
-
 <nav class="navbar navbar-inverse navbar-fixed-top">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -194,7 +193,7 @@
         }, 5000);
     });
 
-    $(".reserve-button").click(function() {
+    $(".reserve-button").click(function () {
         var glyphicon = $(this.children[0]);
 
         if (glyphicon.hasClass("glyphicon-plus")) {
@@ -203,8 +202,7 @@
         else {
             glyphicon.removeClass("glyphicon-chevron-up").addClass("glyphicon-plus");
         }
-  });
-
+    });
   {% block custom_js %}
   {% endblock %}
 </script>
