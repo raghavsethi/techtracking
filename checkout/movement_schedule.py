@@ -46,6 +46,8 @@ def get_periods_with_cleanup() -> List[Period]:
 
 class MovementSchedule:
     def __init__(self, site: Site, date: date):
+        self.date: datetime.date = date
+        self.periods: List[PeriodMovements] = []
         movements: Dict[Period, List[Movement]] = OrderedDict()
 
         periods: List[Period] = get_periods_with_cleanup()
@@ -53,9 +55,6 @@ class MovementSchedule:
             movements[period] = []
 
         for site_sku in list(site.sitesku_set.all()):
-            self.date: datetime.date = date
-            self.periods: List[PeriodMovements] = []
-
             storage_location = site_sku.storage_location
 
             storage_location = Classroom(pk=0, site=site, code="DEF", name=storage_location)
