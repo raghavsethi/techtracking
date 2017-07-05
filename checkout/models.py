@@ -76,7 +76,7 @@ class Reservation(models.Model):
 
     def __str__(self):
         return "{} Class {} {} - {} {}".format(
-            self.get_period_display(), self.classroom.name, self.team, self.units, self.site_sku.sku.shortname)
+            self.get_period_display(), self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
 
 
 # Need to figure out how to autogenerate these

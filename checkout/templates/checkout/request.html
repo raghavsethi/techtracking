@@ -50,14 +50,14 @@
   <div class="container">
     <h1>Reserve</h1>
     <form class="form-horizontal" action="{% url 'reserve' %}" method="post">
-      <input type="hidden" name="site_assignment_pk" value="{{ site_assignment.pk }}">
+      <input type="hidden" name="site_assignment_pk" value="{{ site_sku.pk }}">
       <input type="hidden" name="request_date" value="{{ request_date.isoformat }}">
       <input type="hidden" name="period" value="{{ period.0 }}">
       {% csrf_token %}
       <div class="form-group">
         <label class="col-xs-3 control-label">Item Type</label>
         <div class="col-xs-9">
-          <p class="form-control-static">{{ site_assignment.sku.shortname }} ({{ site_assignment.sku.model_identifier }})</p>
+          <p class="form-control-static">{{ site_sku.sku.display_name }} ({{ site_sku.sku.model_identifier }})</p>
         </div>
       </div>
       <div class="form-group">
@@ -75,7 +75,7 @@
       <div class="form-group">
         <label class="col-xs-3 control-label">Available Units</label>
         <div class="col-xs-9">
-          <p class="form-control-static">{{ free_units }} ({{ site_assignment.units }} at site)</p>
+          <p class="form-control-static">{{ free_units }} ({{ site_sku.units }} at site)</p>
         </div>
       </div>
       <div class="form-group">
@@ -97,7 +97,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-3 control-label">Teaching Team</label>
+        <label class="col-xs-3 control-label">Classroom</label>
         <div class="col-xs-9">
           <select name="classroom_pk" class="form-control">
             {% for classroom in classrooms %}
