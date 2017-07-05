@@ -42,8 +42,12 @@
     margin-top: 75px;
 }
 
-.hr-smallmargin {
-    margin: 5px 0 5px 0;
+.small-margin-bottom {
+    margin: 0 0 5px 0;
+}
+
+.small-margin-top {
+    margin: 5px 0 0 0;
 }
 
 .user-info {
@@ -72,15 +76,11 @@
 }
 
 .pill-reserved {
-    background-color: #f1f1f1;
+    background-color: #eaeaea;
 }
 
 .pill-container a:hover {
     text-decoration: none;
-}
-
-.reserve-button-container {
-    margin: -1px 0 5px 0;
 }
 
 .reserve-button {
@@ -97,6 +97,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: auto;
 }
 
 .table-cell {
