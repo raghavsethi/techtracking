@@ -99,6 +99,8 @@
         {% if user.site %}
           {% if user.is_staff %}
             <li><a href="/admin">Admin</a></li>
+          {% endif %}
+          {% if user.is_superuser %}
             <li><a href="{% url 'export' %}">Export</a></li>
           {% endif %}
           <li><a href="https://goo.gl/forms/ZOT4PG11uZbiSoA93">Help</a></li>
