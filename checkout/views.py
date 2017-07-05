@@ -113,7 +113,7 @@ def reserve_request(request):
     if user.is_staff:
         teams = Team.objects.filter(site=user.site)
     else:
-        teams: List[Team] = Team.objects.filter(team__email=user.email).all()
+        teams: List[Team] = Team.objects.filter(members__email=user.email).all()
 
     if len(teams) == 0:
         logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
