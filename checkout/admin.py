@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from import_export.admin import ImportExportModelAdmin
 
-from checkout.bulk_imports import TeamResource
+from checkout.bulk_imports import TeamResource, UserResource
 from checkout.models import *
 
 
@@ -69,7 +69,9 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 
-class UserAdmin(BaseUserAdmin):
+class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
+    resource_class = UserResource
+
     # The forms to add and change user instances
     form = UserChangeForm
     add_form = UserCreationForm
@@ -232,7 +234,7 @@ class PeriodAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 superuser_admin_site = SuperuserAdminSite(name='superuser_admin')
-superuser_admin_site.register(User, UserAdmin)
+superuser_admin_site.register(User, StaffUserAdmin)
 superuser_admin_site.register(Classroom, ClassroomAdmin)
 superuser_admin_site.register(Reservation, ReservationAdmin)
 superuser_admin_site.register(SiteSku, SiteSkuAdmin)
@@ -245,7 +247,7 @@ superuser_admin_site.register(Day)
 superuser_admin_site.register(Subject)
 
 staff_admin_site = SiteDirectorAdminSite(name='staff_admin')
-staff_admin_site.register(User, UserAdmin)
+staff_admin_site.register(User, StaffUserAdmin)
 staff_admin_site.register(Classroom, ClassroomAdmin)
 staff_admin_site.register(Reservation, ReservationAdmin)
 staff_admin_site.register(SiteSku, SiteSkuAdmin)

@@ -3,7 +3,7 @@ from typing import List
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
-from checkout.models import Team, Subject, User
+from checkout.models import Team, Subject, User, Site
 
 
 class TeamResource(resources.ModelResource):
@@ -66,3 +66,25 @@ class TeamResource(resources.ModelResource):
 
         team.save()
         return team
+
+
+class UserResource(resources.ModelResource):
+    class Meta:
+        model = User
+        fields = ('site', 'email', 'display_name')
+        import_id_fields = ('email',)
+
+    site = fields.Field(
+        column_name='site',
+        attribute='site',
+        widget=ForeignKeyWidget(Site, 'name'))
+
+    def before_import_row(self, row, **kwargs):
+        user: User = kwargs['user']
+
+        if row['site'] is None:
+            row['site'] = user.site.name
+
+        if not user.is_superuser:
+            if row['site'] != user.site.name:
+                raise ValueError("Cannot import users for site '{}', only '{}'".format(row['site'], user.site))
