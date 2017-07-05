@@ -6,6 +6,7 @@ from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
+from django.forms.utils import ErrorList
 from import_export.admin import ImportExportModelAdmin
 
 from checkout.bulk_imports import TeamResource, UserResource
@@ -228,6 +229,36 @@ class WeekForm(forms.ModelForm):
     class Meta:
         model = Week
         fields = ['site', 'week_number']
+
+    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
+                 initial=None, error_class=ErrorList, label_suffix=None,
+                 empty_permitted=False, instance: Week=None, use_required_attribute=None):
+        super(WeekForm, self).__init__(
+            data=data,
+            files=files,
+            auto_id=auto_id,
+            prefix=prefix,
+            initial=initial,
+            error_class=error_class,
+            label_suffix=label_suffix,
+            empty_permitted=empty_permitted,
+            instance=instance,
+            use_required_attribute=use_required_attribute)
+
+        if instance is not None:
+            self.initial['start_date'] = instance.start_date()
+            self.initial['end_date'] = instance.end_date()
+
+            days = instance.days()
+            holidays = []
+            d = instance.start_date()
+            while d < instance.end_date():
+                d = d + timedelta(days=1)
+                if d not in days:
+                    holidays.append(d)
+
+            for i in range(len(holidays)):
+                self.initial['holiday_' + str(i + 1)] = holidays[i]
 
     def save(self, commit=True):
         start_date = self.cleaned_data['start_date']
