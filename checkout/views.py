@@ -162,5 +162,14 @@ def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
     reservation.delete()
 
+    logger.info("%s: Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+                request.user.email,
+                reservation.team,
+                reservation.site_sku,
+                reservation.classroom,
+                reservation.units,
+                reservation.date,
+                reservation.period)
+
     messages.success(request, "Reservation for {} unit(s) of {} was deleted".format(reservation.units, reservation.site_sku.sku.display_name))
     return redirect('reservations')
