@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom, Period, Subject
+from checkout.models import *
 from checkout.date_schedule import DateSchedule
 from checkout.utils import error_redirect, success_redirect
 
@@ -98,11 +98,11 @@ def site_week_schedule(request, site_id, week_number: int):
 
 
 def render_schedule(request, site: Site, week: Week):
-    days_in_week: List[Day] = sorted(list(week.days.all()))
+    days_in_week = sorted(list(week.days()))
 
     schedule: List[DateSchedule] = []
     for day in days_in_week:
-        schedule.append(DateSchedule(site, day.date))
+        schedule.append(DateSchedule(site, day))
 
     previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
     next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()

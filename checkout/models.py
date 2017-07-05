@@ -1,3 +1,5 @@
+import json
+from datetime import datetime, date
 from functools import total_ordering
 from typing import List
 
@@ -160,20 +162,6 @@ class Reservation(models.Model):
             self.period, self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
 
 
-@total_ordering
-class Day(models.Model):
-    date = models.DateField(primary_key=True)
-
-    def __str__(self):
-        return self.date.isoformat()
-
-    def __eq__(self, other):
-        return self.date == other.date
-
-    def __lt__(self, other):
-        return self.date < other.date
-
-
 # Will not be visible in the admin UI by default
 @total_ordering
 class Week(models.Model):
@@ -182,13 +170,17 @@ class Week(models.Model):
 
     site = models.ForeignKey(Site)
     week_number = models.IntegerField()
-    days = models.ManyToManyField(Day, blank=True, help_text="Working days in this week")
+    pickled_days = models.CharField(max_length=1024)
 
-    def start_date(self):
-        return sorted(list(self.days.all()))[0].date
+    def start_date(self) -> date:
+        return sorted(list(self.days()))[0]
 
-    def end_date(self):
-        return sorted(list(self.days.all()))[-1].date
+    def end_date(self) -> date:
+        return sorted(list(self.days()))[-1]
+
+    def days(self) -> List[date]:
+        date_strs: List[str] = json.loads(self.pickled_days)
+        return [datetime.strptime(date_str, '%Y-%m-%d').date() for date_str in date_strs]
 
     def __eq__(self, other):
         return self.site == other.site and self.week_number == other.week_number
@@ -197,7 +189,7 @@ class Week(models.Model):
         return self.week_number < other.week_number
 
     def __str__(self):
-        days: List[Day] = list(self.days.all())
+        days: List[Day] = list(self.days())
         return "{} - Week {} ({} days, {} - {})".format(
             self.site, self.week_number, len(days), self.start_date(), self.end_date())
 

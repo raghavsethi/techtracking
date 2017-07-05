@@ -1,6 +1,8 @@
+from datetime import timedelta
+
 from django import forms
 from django.contrib import admin
-from django.contrib.admin import AdminSite
+from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
@@ -222,14 +224,54 @@ class TeamAdmin(ImportExportModelAdmin):
         return qs.filter(site=request.user.site)
 
 
+class WeekForm(forms.ModelForm):
+    class Meta:
+        model = Week
+        fields = ['site', 'week_number']
+
+    def save(self, commit=True):
+        start_date = self.cleaned_data['start_date']
+        end_date = self.cleaned_data['end_date']
+
+        days_delta = end_date - start_date
+        num_days = days_delta.days
+        days: List[str] = []
+
+        holidays = [self.cleaned_data['holiday_1'],
+                    self.cleaned_data['holiday_2'],
+                    self.cleaned_data['holiday_3'],
+                    self.cleaned_data['holiday_4']]
+
+        for day_number in range(0, num_days + 1):
+            day: datetime = (start_date + timedelta(days=day_number))
+            if day not in holidays:
+                days.append(day.isoformat())
+
+        self.instance.pickled_days = json.dumps(days)
+        return self.instance
+
+    def save_m2m(self):
+        pass
+
+    start_date = forms.DateField(label='Start Date', widget=AdminDateWidget)
+    end_date = forms.DateField(label='End Date', widget=AdminDateWidget)
+
+    holiday_1 = forms.DateField(label='Holiday', widget=AdminDateWidget, required=False)
+    holiday_2 = forms.DateField(label='Holiday', widget=AdminDateWidget, required=False)
+    holiday_3 = forms.DateField(label='Holiday', widget=AdminDateWidget, required=False)
+    holiday_4 = forms.DateField(label='Holiday', widget=AdminDateWidget, required=False)
+
+
 # noinspection PyMethodMayBeStatic
 @admin.register(Week)
 class WeekAdmin(admin.ModelAdmin):
+    form = WeekForm
+
     list_display = ('site_week', 'start_date', 'end_date', 'working_days')
     list_filter = ('site',)
 
     def working_days(self, week: Week):
-        return len(week.days.all())
+        return len(week.days())
 
     def site_week(self, week: Week):
         return week.site.name + " - Week " + str(week.week_number)

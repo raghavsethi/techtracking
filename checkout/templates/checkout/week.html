@@ -45,7 +45,7 @@
           <th></th>
           {% for calendar_day in calendar_days %}
             <th class="text-center {% if calendar_day.date.isoformat == today %}table-cell-today{% endif %}" style="min-width: 150px; width:250px;">
-              {{ calendar_day.date|date:"D, M d" }}
+              {{ calendar_day|date:"D, M d" }}
             </th>
           {% endfor %}
         </tr>
@@ -58,10 +58,10 @@
             </th>
             {% for calendar_day in calendar_days %}
               {% for work_day in schedule %}
-                {% if work_day.date == calendar_day.date %}
+                {% if work_day.date == calendar_day %}
                   {% for period_details in work_day.periods %}
                     {% if period_details.period == period %}
-                      <td class="{% if calendar_day.date.isoformat == today %}table-cell-today{% endif %}">
+                      <td class="{% if calendar_day.isoformat == today %}table-cell-today{% endif %}">
                         <div class="table-cell">
                           <div class="reserve">
                             <div class="btn-group btn-group-justified">

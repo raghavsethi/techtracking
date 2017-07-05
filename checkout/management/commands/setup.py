@@ -53,24 +53,4 @@ class Command(BaseCommand):
             self.stdout.write("Default subject '{}' present in database, skipping..".format(Subject.ACTIVITY_SUBJECT))
             self.stdout.write('')
 
-        start_date = read_date('Earliest start date of program across all sites (e.g. 2017-06-01)')
-        end_date = read_date('Latest end date of program across all sites (e.g. 2017-08-01)')
-        self.stdout.write('')
-
-        self.stdout.write('Creating days..')
-        days_delta: timedelta = end_date - start_date
-        num_days = days_delta.days
-        created_days = 0
-        for day_number in range(0, num_days + 1):
-            day = start_date + timedelta(days=day_number)
-
-            try:
-                Day.objects.get(date=day)
-            except ObjectDoesNotExist:
-                Day.objects.create(date=day)
-                created_days += 1
-
-        self.stdout.write('Created {} days'.format(created_days))
-        self.stdout.write('')
-
         self.stdout.write('Setup completed successfully!')
