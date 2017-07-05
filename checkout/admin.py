@@ -48,14 +48,14 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     list_filter = ('is_staff',)
     fieldsets = (
         (None, {'fields': ('email', 'password', 'name', 'site')}),
-        ('Permissions', {'fields': ('is_staff', 'is_superuser', 'user_permissions')}),
+        ('Permissions', {'fields': ('is_staff', 'is_superuser')}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'name', 'site', 'password1', 'password2', 'user_permissions')}),
+            'fields': ('email', 'name', 'site', 'password1', 'password2')}),
     )
     search_fields = ('email',)
     ordering = ('email',)
@@ -65,6 +65,7 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
         form = super(UserAdmin, self).get_form(request, obj, **kwargs)
         if not request.user.is_superuser:
             form.base_fields['site'].queryset = Site.objects.filter(pk=request.user.site.pk)
+            form.base_fields['is_superuser'].disabled = True
         return form
 
     def activated(self, user: User):
