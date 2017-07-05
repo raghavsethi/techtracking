@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^request/', checkout.views.reserve_request, name='reserve_request'),
     url(r'^reserve/', checkout.views.reserve, name='reserve'),
     url(r'^reservations/', checkout.views.reservations, name='reservations'),
+    url(r'^movements/', checkout.views.movements, name='movements'),
     url(r'^delete/', checkout.views.delete, name='delete'),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('django.contrib.auth.urls')),

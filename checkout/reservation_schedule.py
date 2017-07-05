@@ -1,20 +1,17 @@
-from typing import List, Tuple
+import datetime
 
 from checkout.models import *
 
-import datetime
 
-
-class DateSchedule:
+class ReservationSchedule:
     def __init__(self, site: Site, date: datetime.date):
-        self.site: Site = site
         self.date: datetime.date = date
         self.periods: List[PeriodTechAvailability] = []
 
-        site_skus: List[SiteSku] = list(self.site.sitesku_set.all())
+        site_skus: List[SiteSku] = list(site.sitesku_set.all())
         periods: List[Period] = sorted(list(site.period_set.all()))
         assignments: List[Reservation] = \
-            list(Reservation.objects.filter(site_sku__site=self.site, date=self.date).all())
+            list(Reservation.objects.filter(site_sku__site=site, date=self.date).all())
 
         for period in periods:
             period_sku_availability = []

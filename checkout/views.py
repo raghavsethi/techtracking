@@ -1,17 +1,17 @@
-from typing import List, Dict, Tuple
-from datetime import datetime
+import logging
+from typing import Dict, Tuple
 
-from django.db import transaction
-from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import HttpResponseNotFound, HttpResponseBadRequest
+from django.shortcuts import render, redirect, get_object_or_404
 
 from checkout.models import *
-from checkout.date_schedule import DateSchedule
+from checkout.movement_schedule import MovementSchedule
+from checkout.reservation_schedule import ReservationSchedule
 from checkout.utils import error_redirect, success_redirect
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -19,12 +19,17 @@ logger = logging.getLogger(__name__)
 def index(request):
     user: User = request.user
     site: Site = user.site
+    week: Week = resolve_week(user)
 
-    weeks: List[Week] = sorted(list(site.week_set.all()))
+    return render_schedule(request, site, week)
+
+
+def resolve_week(user: User):
+    weeks: List[Week] = sorted(list(user.site.week_set.all()))
 
     if len(weeks) < 1:
-        logger.error("[%s] No week objects found for site %s", user.email, site)
-        return HttpResponseBadRequest("At least one week must be configured for site %s" % site.name)
+        logger.error("[%s] No week objects found for site %s", user.email, user.site)
+        return HttpResponseBadRequest("At least one week must be configured for site %s" % user.site.name)
 
     week_number = weeks[0].week_number
     today = datetime.now().date()
@@ -37,10 +42,9 @@ def index(request):
         if today <= week.start_date():
             week_number = week.week_number
 
-    logger.info("[%s] Resolved current week for %s to be %s", user.email, site, week_number)
-    week: Week = site.week_set.filter(week_number=week_number).first()
+    logger.info("[%s] Resolved current week for %s to be %s", user.email, user.site, week_number)
 
-    return render_schedule(request, site, week)
+    return user.site.week_set.filter(week_number=week_number).first()
 
 
 @login_required
@@ -100,9 +104,9 @@ def site_week_schedule(request, site_id, week_number: int):
 def render_schedule(request, site: Site, week: Week):
     days_in_week = sorted(list(week.days()))
 
-    schedule: List[DateSchedule] = []
+    schedule: List[ReservationSchedule] = []
     for day in days_in_week:
-        schedule.append(DateSchedule(site, day))
+        schedule.append(ReservationSchedule(site, day))
 
     previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
     next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
@@ -117,7 +121,7 @@ def render_schedule(request, site: Site, week: Week):
         "schedule": schedule,
     }
 
-    return render(request, "checkout/week.html", context)
+    return render(request, "checkout/week_reservations.html", context)
 
 
 @login_required
@@ -263,6 +267,34 @@ def reservations(request):
     }
 
     return render(request, "checkout/reservations.html", context)
+
+
+@login_required
+def movements(request):
+    user: User = request.user
+    site: Site = user.site
+    week: Week = resolve_week(user)
+
+    schedule: List[MovementSchedule] = []
+    days_in_week = sorted(list(week.days()))
+
+    for day in days_in_week:
+        schedule.append(MovementSchedule(site, day))
+
+    previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
+    next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
+
+    context = {
+        "aimhigh_site": site,
+        "week": week,
+        "previous_week": previous_week,
+        "next_week": next_week,
+        "calendar_days": days_in_week,  # TODO: make this all calendar days in week
+        "periods": sorted(site.period_set.all()),
+        "schedule": schedule,
+    }
+
+    return render(request, "checkout/week_movements.html", context)
 
 
 @login_required

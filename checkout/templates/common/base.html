@@ -93,6 +93,10 @@
           <li {% if request.path == url_reservations %} class="active"{% endif %}>
             <a href="{{ url_reservations }}">Reservations</a>
           </li>
+          {% url 'movements' as url_movements %}
+          <li {% if request.path == url_movements %} class="active"{% endif %}>
+            <a href="{{ url_movements }}">Movements</a>
+          </li>
         {% endif %}
       </ul>
       <ul class="nav navbar-nav navbar-right">

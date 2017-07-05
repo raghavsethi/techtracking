@@ -1,0 +1,9 @@
+{% extends "checkout/week.html" %}
+{% block title %} Movements {% endblock %}
+{% block cell %}
+  <ol>
+  {% for movement in period_details.movements %}
+    <li>{{ movement }}</li>
+  {% endfor %}
+  </ol>
+{% endblock %}
