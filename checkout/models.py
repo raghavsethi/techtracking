@@ -148,12 +148,14 @@ class Reservation(models.Model):
     period = models.ForeignKey(Period)
     units = models.IntegerField()
     purpose = models.ForeignKey(UsagePurpose, null=True, blank=True)
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL)
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
     def __eq__(self, other):
         return (
             self.team == other.team and self.site_sku == other.site_sku and self.classroom == other.classroom and
-            self.units == other.units and self.date == other.date and self.period == other.period)
+            self.units == other.units and self.date == other.date and self.period == other.period and
+            self.creator == other.creator)
 
     def __lt__(self, other):
         if self.date != other.date:

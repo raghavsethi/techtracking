@@ -228,6 +228,7 @@ def reserve(request):
             date=request_date,
             period=period,
             purpose=purpose,
+            creator=user,
             comment=comment)
 
         reserved_periods.append(period.name)
