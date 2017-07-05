@@ -88,11 +88,11 @@ def reserve_request(request):
         new_team.save()
         teams = [new_team]
 
-    reservations: List[Reservation] = list(Reservation.objects.filter(
+    existing_reservations: List[Reservation] = list(Reservation.objects.filter(
         site_sku=site_sku, date=request_date, period=period_number))
     used_units = 0
-    for reservation in reservations:
-        used_units += reservation.units
+    for existing_reservation in existing_reservations:
+        used_units += existing_reservation.units
 
     context = {
         "site": site_sku.site,
@@ -114,16 +114,28 @@ def reserve(request):
     team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
 
     period_number = int(request.POST['period'])
-    units = int(request.POST['request_units'])
+    requested_units = int(request.POST['request_units'])
     classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom_pk'])
 
+    existing_reservations: List[Reservation] = list(Reservation.objects.filter(
+        site_sku=site_sku, date=request_date, period=period_number))
+    used_units = 0
+    for existing_reservation in existing_reservations:
+        used_units += existing_reservation.units
+    free_units = site_sku.units - used_units
+
+    if requested_units > free_units:
+        messages.error(request, "Cannot reserve more than the available units of {} in this period ({})".format(
+            site_sku.sku.display_name, free_units))
+        return redirect('index')
+
     logger.info("Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
-                team, site_sku, classroom, units, request_date, period_number)
+                team, site_sku, classroom, requested_units, request_date, period_number)
 
     Reservation.objects.create(
-        team=team, site_sku=site_sku, classroom=classroom, units=units, date=request_date, period=period_number)
+        team=team, site_sku=site_sku, classroom=classroom, units=requested_units, date=request_date, period=period_number)
 
-    messages.success(request, "Reservation confirmed for {} unit(s) of {}".format(units, site_sku.sku.display_name))
+    messages.success(request, "Reservation confirmed for {} unit(s) of {}".format(requested_units, site_sku.sku.display_name))
     return redirect('index')
 
 
