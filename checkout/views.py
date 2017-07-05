@@ -1,7 +1,7 @@
 from typing import List
 from datetime import datetime
 
-from django.http import HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -228,16 +228,21 @@ def reservations(request):
 @login_required
 def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
-    reservation.delete()
 
-    logger.info("[%s] Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
-                request.user.email,
-                reservation.team,
-                reservation.site_sku,
-                reservation.classroom,
-                reservation.units,
-                reservation.date,
-                reservation.period)
+    if request.user in reservation.team.team.all() or request.user.is_staff:
+        reservation.delete()
+        logger.info("[%s] Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+                    request.user.email,
+                    reservation.team,
+                    reservation.site_sku,
+                    reservation.classroom,
+                    reservation.units,
+                    reservation.date,
+                    reservation.period)
+        messages.success(request, "Reservation for {} unit(s) of {} was deleted".format(reservation.units,
+                                                                                        reservation.site_sku.sku.display_name))
+    else:
+        messages.error(request, "You must be an administrator or a member of the team that made the reservation to "
+                                "delete it")
 
-    messages.success(request, "Reservation for {} unit(s) of {} was deleted".format(reservation.units, reservation.site_sku.sku.display_name))
-    return redirect('reservations')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/reservations'))

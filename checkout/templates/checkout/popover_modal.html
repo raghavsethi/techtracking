@@ -1,0 +1,79 @@
+<div class="modal text-left" role="dialog"
+     id="reservation_{{ reservation.pk }}"
+     aria-labelledby="reservation_label_{{ reservation.pk }}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"
+                aria-label="Close"><span aria-hidden="true">×</span>
+        </button>
+        <h3 class="modal-title" id="reservation_label_{{ reservation.pk }}">
+          Reservation Details</h3>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <form class="form-horizontal">
+            <div class="form-group">
+              <label class="col-xs-3 control-label">Item Type</label>
+              <div class="col-xs-9">
+                <p class="form-control-static">{{ reservation.site_sku.sku.display_name }}
+                  ({{ reservation.site_sku.sku.model_identifier }})</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-xs-3 control-label">Time</label>
+              <div class="col-xs-9">
+                <p class="form-control-static">{{ reservation.date|date:"D, M d" }} - {{ period.1 }}</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-xs-3 control-label">Reserved Units</label>
+              <div class="col-xs-9">
+                <p class="form-control-static">{{ reservation.units }}</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-xs-3 control-label">Teaching Team</label>
+              <div class="col-xs-9">
+                <p class="form-control-static">{{ reservation.team }}</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label
+                  class="col-xs-3 control-label">Classroom</label>
+              <div class="col-xs-9">
+                <p class="form-control-static">{{ reservation.classroom.name }}</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label
+                  class="col-xs-3 control-label">Comment</label>
+              <div class="col-xs-9">
+                <p class="form-control-static">
+                  {% if reservation.comment %}
+                    {{ reservation.comment }}
+                  {% else %}
+                    None
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        {% if user in reservation.team.team.all or user.is_staff %}
+          <button type="button" class="btn btn-danger"
+                  data-toggle="modal"
+                  data-target="#reservation_delete_{{ reservation.pk }}" data-dismiss="modal">
+            <span class="glyphicon glyphicon-trash"></span>&nbsp;Delete Reservation
+          </button>
+        {% endif %}
+        <button type="button" class="btn btn-default" data-toggle="modal" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>

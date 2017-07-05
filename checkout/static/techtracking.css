@@ -82,3 +82,7 @@
     min-width: 25px;
     display: inline-block;
 }
+
+.modal .form-group {
+    margin-bottom: 0;
+}
