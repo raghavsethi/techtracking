@@ -20,5 +20,7 @@ import checkout.views
 
 urlpatterns = [
     url(r'^$', checkout.views.index, name='index'),
+    url(r'^request/', checkout.views.reserve_request, name='reserve_request'),
+    url(r'^reserve/', checkout.views.reserve, name='reserve'),
     url(r'^admin/', admin.site.urls),
 ]

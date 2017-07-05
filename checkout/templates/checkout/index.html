@@ -8,7 +8,7 @@
   <meta name="author" content="">
   <link rel="icon" href="../../favicon.ico">
 
-  <title>Aim High - Checkout</title>
+  <title>Aim High - {{ site.name }} - Schedule</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
         integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -103,7 +103,7 @@
                               {% for sku in period_details.skus %}
                                 <div class="row">
                                   <div class="col-xs-12">
-                                    <a href="#">
+                                    <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.0 }}">
                                       <span class="label label-success sku-fixed">Free</span>
                                       <span class="label label-default sku-fixed">{{ sku.free_count }}</span>
                                       {{ sku.site_sku.sku.shortname }}
