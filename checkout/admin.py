@@ -2,7 +2,6 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.forms.utils import ErrorList
 from import_export.admin import ImportExportModelAdmin
@@ -11,6 +10,19 @@ from import_export.formats import base_formats
 from checkout.bulk_imports import TeamResource, UserResource, SKUResource
 from checkout.models import *
 
+
+class SuperuserOnlyAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
 # -33e47976b517
@@ -117,9 +129,10 @@ class ReservationAdmin(admin.ModelAdmin):
 
 
 @admin.register(SiteSku)
-class SiteSkuAdmin(admin.ModelAdmin):
+class SiteSkuAdmin(SuperuserOnlyAdmin):
     list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
     list_filter = ('site', 'sku__display_name')
+    readonly_fields = ('site', 'sku', 'units')
 
     def sku__display_name(self, site_sku: SiteSku):
         return site_sku.sku.display_name
@@ -129,9 +142,6 @@ class SiteSkuAdmin(admin.ModelAdmin):
         return site_sku.units
     units_display.short_description = "Assigned Units"
 
-    def has_module_permission(self, request):
-        return request.user.is_staff
-
     def get_queryset(self, request):
         qs = super(SiteSkuAdmin, self).get_queryset(request)
         if request.user.is_superuser:
@@ -139,9 +149,15 @@ class SiteSkuAdmin(admin.ModelAdmin):
 
         return qs.filter(site=request.user.site)
 
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_staff
+
 
 @admin.register(SKU)
-class SkuAdmin(ImportExportModelAdmin):
+class SkuAdmin(ImportExportModelAdmin, SuperuserOnlyAdmin):
     resource_class = SKUResource
 
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
@@ -289,7 +305,7 @@ class WeekAdmin(admin.ModelAdmin):
 
 # noinspection PyMethodMayBeStatic
 @admin.register(Site)
-class SiteAdmin(admin.ModelAdmin):
+class SiteAdmin(SuperuserOnlyAdmin):
     list_display = (
         'name',
         'staff',
@@ -324,28 +340,22 @@ class SiteAdmin(admin.ModelAdmin):
 
 
 @admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    def has_module_permission(self, request):
-        return request.user.is_superuser
+class SubjectAdmin(SuperuserOnlyAdmin):
+    pass
 
 
 @admin.register(Period)
-class PeriodAdmin(admin.ModelAdmin):
+class PeriodAdmin(SuperuserOnlyAdmin):
     list_display = ('name', 'number')
-
-    def has_module_permission(self, request):
-        return request.user.is_superuser
 
 
 @admin.register(UsagePurpose)
-class UsagePurposeAdmin(admin.ModelAdmin):
-    def has_module_permission(self, request):
-        return request.user.is_superuser
+class UsagePurposeAdmin(SuperuserOnlyAdmin):
+    pass
 
 
 @admin.register(SKUType)
-class SKUTypeAdmin(admin.ModelAdmin):
-    def has_module_permission(self, request):
-        return request.user.is_superuser
+class SKUTypeAdmin(SuperuserOnlyAdmin):
+    pass
 
 admin.site.unregister(Group)
