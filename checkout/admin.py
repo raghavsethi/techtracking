@@ -247,18 +247,25 @@ class WeekAdmin(admin.ModelAdmin):
 
 @admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
-    list_display = ('name', 'users', 'activated_users', 'classrooms', 'periods', 'reservations', 'skus_allocated', 'total_units_allocated')
+    list_display = (
+        'name',
+        'staff',
+        'users',
+        'classrooms',
+        'periods',
+        'reservations',
+        'allocated')
 
     def users(self, site: Site):
-        return site.user_set.count()
-
-    def activated_users(self, site: Site):
-        total: int = 0
+        active: int = 0
         for user in site.user_set.all():
             if user.has_usable_password():
-                total += 1
+                active += 1
 
-        return total
+        return "{} ({} active)".format(site.user_set.count(), active)
+
+    def staff(self, site: Site):
+        return ", ".join(user.name for user in site.user_set.filter(is_staff=True).all())
 
     def classrooms(self, site: Site):
         return site.classroom_set.count()
@@ -272,14 +279,9 @@ class SiteAdmin(admin.ModelAdmin):
             total += site_sku.reservation_set.count()
         return total
 
-    def skus_allocated(self, site: Site):
-        return site.sitesku_set.count()
-
-    def total_units_allocated(self, site: Site):
-        total: int = 0
-        for site_sku in site.sitesku_set.all():
-            total += site_sku.units
-        return total
+    def allocated(self, site: Site):
+        return ", ".join(
+            ["{} ({})".format(site_sku.sku.display_name, site_sku.units) for site_sku in site.sitesku_set.all()])
 
 
 @admin.register(Period)
