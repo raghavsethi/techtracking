@@ -24,6 +24,7 @@ class SuperuserOnlyAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
+
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
 # -33e47976b517
 @admin.register(User)
