@@ -70,7 +70,7 @@ class TeamResource(resources.ModelResource):
 class UserResource(resources.ModelResource):
     class Meta:
         model = User
-        fields = ('site', 'email', 'name')
+        fields = ('site', 'is_staff', 'email', 'name')
         import_id_fields = ('email',)
 
     site = fields.Field(
@@ -85,6 +85,9 @@ class UserResource(resources.ModelResource):
             row['site'] = user.site.name
 
         if not user.is_superuser:
+            if row['is_staff'] != 1:
+                row['is_staff'] = 0
+
             if row['site'] != user.site.name:
                 raise ValueError("Cannot import users for site '{}', only '{}'".format(row['site'], user.site))
 
