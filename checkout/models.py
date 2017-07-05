@@ -1,9 +1,14 @@
+from functools import total_ordering
+from datetime import timedelta
+
 from django.db import models
 from django.conf import settings
-from checkout.user_manager import CheckoutUserManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from functools import total_ordering
+
+from checkout.user_manager import CheckoutUserManager
 
 
 class SKU(models.Model):
@@ -83,7 +88,7 @@ class Reservation(models.Model):
 # Need to figure out how to autogenerate these
 @total_ordering
 class Day(models.Model):
-    date = models.DateField(unique=True)
+    date = models.DateField(primary_key=True)
 
     def __str__(self):
         return self.date.isoformat()
@@ -107,7 +112,7 @@ class Week(models.Model):
     week_number = models.IntegerField()
     start_date = models.DateField()
     end_date = models.DateField()
-    days = models.ManyToManyField(Day)
+    days = models.ManyToManyField(Day, blank=True)
 
     def __eq__(self, other):
         return self.site == other.site and self.start_date == other.start_date and self.end_date == other.end_date
@@ -117,6 +122,20 @@ class Week(models.Model):
 
     def __str__(self):
         return "{} - Week {} ({} - {})".format(self.site, self.week_number, self.start_date, self.end_date)
+
+
+@receiver(post_save, sender=Week, dispatch_uid="create_default_days")
+def update_stock(sender, instance: Week, **kwargs):
+    if len(instance.days.all()) == 0:
+        days_delta: timedelta = instance.end_date - instance.start_date
+        num_days = days_delta.days
+        days = []
+        for day_number in range(0, num_days + 1):
+            date = instance.start_date + timedelta(days=day_number)
+            days.append(Day.objects.create(date=date))
+
+        instance.days = days
+        instance.save()
 
 
 class User(AbstractBaseUser, PermissionsMixin):
