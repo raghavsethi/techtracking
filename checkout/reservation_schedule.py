@@ -9,7 +9,7 @@ class ReservationSchedule:
         self.periods: List[PeriodTechAvailability] = []
 
         site_skus: List[SiteSku] = list(site.sitesku_set.all())
-        periods: List[Period] = sorted(list(site.period_set.all()))
+        periods: List[Period] = sorted(list(Period.objects.all()))
         assignments: List[Reservation] = \
             list(Reservation.objects.filter(site_sku__site=site, date=self.date).all())
 

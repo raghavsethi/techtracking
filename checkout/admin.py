@@ -339,6 +339,7 @@ class WeekAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
+# noinspection PyMethodMayBeStatic
 @admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
     list_display = (
@@ -346,7 +347,6 @@ class SiteAdmin(admin.ModelAdmin):
         'staff',
         'users',
         'classrooms',
-        'periods',
         'reservations',
         'allocated')
 
@@ -363,9 +363,6 @@ class SiteAdmin(admin.ModelAdmin):
 
     def classrooms(self, site: Site):
         return site.classroom_set.count()
-
-    def periods(self, site: Site):
-        return site.period_set.count()
 
     def reservations(self, site: Site):
         total: int = 0
@@ -386,18 +383,10 @@ class SubjectAdmin(admin.ModelAdmin):
 
 @admin.register(Period)
 class PeriodAdmin(admin.ModelAdmin):
-    list_display = ('name', 'number', 'site')
-    list_filter = ('site',)
+    list_display = ('name', 'number')
 
     def has_module_permission(self, request):
-        return request.user.is_staff
-
-    def get_queryset(self, request):
-        qs = super(PeriodAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-
-        return qs.filter(site=request.user.site)
+        return request.user.is_superuser
 
 
 @admin.register(UsagePurpose)

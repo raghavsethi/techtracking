@@ -41,7 +41,8 @@ def order_candidates(reservation: Reservation, units_by_location: Dict[Classroom
 class MovementSchedule:
     def __init__(self, site: Site, date: date):
         movements: Dict[Period, List[Movement]] = OrderedDict()
-        for period in sorted(site.period_set.all()):
+        periods = sorted(Period.objects.all())
+        for period in periods:
             movements[period] = []
 
         for site_sku in list(site.sitesku_set.all()):
@@ -56,7 +57,6 @@ class MovementSchedule:
             # Assumption: All items can be picked up at the beginning of the day at the storage location
             units_by_location: Dict[Classroom, int] = {origin: site_sku.units}
 
-            periods = sorted(site.period_set.all())
             for period in periods:
                 postmove_units_by_location: Dict[Classroom, int] = defaultdict(int)
                 reservations = list(Reservation.objects.filter(site_sku=site_sku, date=date, period=period).all())

@@ -119,7 +119,6 @@ class Team(models.Model):
 
 @total_ordering
 class Period(models.Model):
-    site = models.ForeignKey(Site)
     number = models.IntegerField(help_text='Determines the ordering of periods in a day. For example, if Period 4 is '
                                            'given number 4, and Activity 1 is given number 5, then Period 4 occurs '
                                            'right before Activity 1')
@@ -129,12 +128,10 @@ class Period(models.Model):
         return self.name == other.name and self.number == other.number
 
     def __lt__(self, other):
-        if self.site == other.site:
-            return self.number < other.number
-        return self.site.id < other.site.id
+        return self.number < other.number
 
     def __str__(self):
-        return self.site.__str__() + " - " + self.name + " (" + str(self.number) + ")"
+        return self.name + " (" + str(self.number) + ")"
 
 
 class UsagePurpose(models.Model):

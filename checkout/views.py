@@ -126,7 +126,7 @@ def render_schedule(request, site: Site, week: Week):
         "previous_week": previous_week,
         "next_week": next_week,
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
-        "periods": sorted(site.period_set.all()),
+        "periods": sorted(Period.objects.all()),
         "schedule": schedule,
     }
 
@@ -159,7 +159,7 @@ def reserve_request(request):
         site_sku=site_sku, date=request_date))
 
     used_units: Dict[Period, int] = {}
-    for period in sorted(user.site.period_set.all()):
+    for period in sorted(Period.objects.all()):
         used_units[period] = 0
 
     for existing_reservation in existing_reservations:
@@ -193,7 +193,7 @@ def reserve(request):
     purpose: UsagePurpose = get_object_or_404(UsagePurpose, pk=request.POST['purpose_pk'])
 
     selected_periods = []
-    for period in sorted(user.site.period_set.all()):
+    for period in sorted(Period.objects.all()):
         checkbox_id = 'period_' + str(period.id)
 
         if checkbox_id in request.POST:
@@ -310,7 +310,7 @@ def movements(request):
         "previous_week": previous_week,
         "next_week": next_week,
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
-        "periods": sorted(site.period_set.all()),
+        "periods": sorted(Period.objects.all()),
         "schedule": schedule,
     }
 
