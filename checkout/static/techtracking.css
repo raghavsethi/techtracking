@@ -4,6 +4,16 @@
     padding: 0;
 }
 
+/* Bootstrap overrides */
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.table > tbody > tr > th {
+    vertical-align: middle;
+}
+
 /* Custom classes */
 
 .body {
@@ -21,7 +31,17 @@
     color: #000;
 }
 
+.reservations {
+    display: block;
+    min-height: 50px;
+}
+
 .sku-reservation {
     padding:0 0 2px;
     margin: 0 -5px 0 -5px;
+}
+
+.sku-fixed {
+    min-width: 30px;
+    display: inline-block;
 }

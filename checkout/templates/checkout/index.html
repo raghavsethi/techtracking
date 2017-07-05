@@ -52,10 +52,10 @@
     <h1>Week {{ week.week_number }} Schedule</h1>
     {% if week_schedule %}
       <div class="table-responsive">
-        <table class="table table-bordered table-hover">
+        <table class="table table-bordered table-hover" style="table-layout: fixed; height: 100%">
           <thead>
           <tr>
-            <th></th>
+            <th width="100"></th>
             {% for calendar_day in calendar_days %}
               <th class="text-center">
                 {{ calendar_day.date }}
@@ -66,7 +66,7 @@
           <tbody>
           {% for period in periods %}
             <tr>
-              <th class="text-center">
+              <th class="text-center" width="100">
                 {{ period.1 }}
               </th>
               {% for calendar_day in calendar_days %}
@@ -75,7 +75,9 @@
                     {% for period_details in work_day.periods %}
                       {% if period_details.period_number == period.0 %}
                         <td>
-                          <div class="row reservations">
+                          <a role="button" data-toggle="collapse" href="#period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
+                          <div class="reservations">
+                            <div class="row">
                             <div class="col-xs-12">
                               {% for sku in period_details.skus %}
                                 {% for reservation in sku.reservations %}
@@ -83,8 +85,8 @@
                                     <div class="col-xs-12">
                                       <div class="row">
                                         <div class="col-xs-12 sku-reservation">
-                                          <span class="label label-info">{{ reservation.classroom.name }}</span>
-                                          <span class="label label-default">{{ reservation.units }}x</span>
+                                          <span class="label label-info sku-fixed">{{ reservation.classroom.name }}</span>
+                                          <span class="label label-default sku-fixed">{{ reservation.units }}</span>
                                           {{ reservation.technology.sku.shortname }}
                                         </div>
                                       </div>
@@ -94,13 +96,18 @@
                               {% endfor %}
                             </div>
                           </div> <!-- /.row reservations -->
-                          <div class="row free collapse">
+                          </div>
+                          </a>
+                          <div class="row free collapse" id="period_details_{{ work_day.date.isoformat }}_{{ period.0 }}">
                             <div class="col-xs-12">
                               {% for sku in period_details.skus %}
                                 <div class="row">
                                   <div class="col-xs-12">
-                                    <a href="#">{{ sku.site_sku.sku.shortname }}
-                                      <span class="badge">{{ sku.free_count }}</span></a>
+                                    <a href="#">
+                                      <span class="label label-success sku-fixed">Free</span>
+                                      <span class="label label-default sku-fixed">{{ sku.free_count }}</span>
+                                      {{ sku.site_sku.sku.shortname }}
+                                    </a>
                                   </div>
                                 </div>
                               {% endfor %}
