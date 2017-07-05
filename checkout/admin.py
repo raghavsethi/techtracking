@@ -4,7 +4,7 @@ from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week, Period
+from checkout.models import *
 
 
 class SuperuserAdminSite(AdminSite):
@@ -238,6 +238,7 @@ superuser_admin_site.register(Week, WeekAdmin)
 superuser_admin_site.register(Site, SiteAdmin)
 superuser_admin_site.register(Period, PeriodAdmin)
 superuser_admin_site.register(Day)
+superuser_admin_site.register(Subject)
 
 staff_admin_site = SiteDirectorAdminSite(name='staff_admin')
 staff_admin_site.register(User, UserAdmin)

@@ -56,12 +56,20 @@ class Classroom(models.Model):
         return "{} - {}".format(self.code, self.name, self.site)
 
 
+class Subject(models.Model):
+    name = models.CharField(max_length=100, primary_key=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Team(models.Model):
     site = models.ForeignKey(Site)
     team = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    subject = models.ForeignKey(Subject, blank=True)
 
     def __str__(self):
-        return ", ".join([member.get_short_name() for member in self.team.all()])
+        return ", ".join([member.get_short_name() for member in self.team.all()]) + " (" + self.subject.__str__() + ")"
 
 
 @total_ordering
