@@ -90,12 +90,19 @@ class Day(models.Model):
 
 
 # Will not be visible in the admin UI by default
+@total_ordering
 class Week(models.Model):
     site = models.ForeignKey(Site)
     week_number = models.IntegerField()
     start_date = models.DateField()
     end_date = models.DateField()
     days = models.ManyToManyField(Day)
+
+    def __eq__(self, other):
+        return self.site == other.site and self.start_date == other.start_date and self.end_date == other.end_date
+
+    def __lt__(self, other):
+        return self.start_date < other.start_date
 
     def __str__(self):
         return "{} - Week {} ({} - {})".format(self.site, self.week_number, self.start_date, self.end_date)
