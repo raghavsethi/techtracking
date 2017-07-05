@@ -21,6 +21,10 @@ def index(request):
     site: Site = user.site
     week: Week = resolve_week(user)
 
+    if week is None:
+        logger.error("[%s] No week objects found for site %s", user.email, site)
+        return HttpResponseBadRequest("At least one week must be configured for site %s" % site.name)
+
     return render_schedule(request, site, week)
 
 
@@ -28,8 +32,7 @@ def resolve_week(user: User):
     weeks: List[Week] = sorted(list(user.site.week_set.all()))
 
     if len(weeks) < 1:
-        logger.error("[%s] No week objects found for site %s", user.email, user.site)
-        return HttpResponseBadRequest("At least one week must be configured for site %s" % user.site.name)
+        return None
 
     week_number = weeks[0].week_number
     today = datetime.now().date()
@@ -275,6 +278,10 @@ def movements(request):
     user: User = request.user
     site: Site = user.site
     week: Week = resolve_week(user)
+
+    if week is None:
+        logger.error("[%s] No week objects found for site %s", user.email, site)
+        return HttpResponseBadRequest("At least one week must be configured for site %s" % site.name)
 
     schedule: List[MovementSchedule] = []
     days_in_week = sorted(list(week.days()))
