@@ -12,20 +12,20 @@
   <div class="availability collapse" id="period_details_{{ work_day.date.isoformat }}_{{ period.id }}">
     <div class="row">
       <div class="col-xs-12">
-        {% for item in period_details.items %}
+        {% for category, free_count in period_details.free.items %}
           <div class="row">
             <div class="col-xs-12">
               <div class="pill-container pill-available">
-                <a href="/request/?site_assignment={{ item.site_inventory.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
+                <a href="{% url 'reserve_request' %}?technology_category={{ category.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
                   <div class="pill">
-                    {% if item.free_count > 0 %}
+                    {% if free_count > 0 %}
                       <span class="label label-success inventory-room">Free</span>
-                      <span class="label label-default inventory-units">{{ item.free_count }}</span>
-                      <small>{{ item.site_inventory.inventory.display_name }}</small>
+                      <span class="label label-default inventory-units">{{ free_count }}</span>
+                      <small>{{ category.name }}</small>
                     {% else %}
                       <span class="label label-danger inventory-room">N/A</span>
-                      <span class="label label-default inventory-units">{{ item.free_count }}</span>
-                      <small>{{ item.site_inventory.inventory.display_name }}</small>
+                      <span class="label label-default inventory-units">{{ free_count }}</span>
+                      <small>{{ category.name }}</small>
                     {% endif %}
                   </div>
                 </a>
@@ -39,24 +39,22 @@
   </div> <!-- /availability -->
   <div class="row"> <!-- reservations -->
     <div class="col-xs-12">
-      {% for item in period_details.items %}
-        {% for reservation in item.reservations %}
-          <div class="row">
-            <div class="col-xs-12">
-              <div class="pill-container pill-reserved">
-                <a role="button" data-toggle="modal" data-target="#reservation_{{ reservation.pk }}">
-                  <div class="pill">
-                    <span class="label label-info inventory-room">{{ reservation.classroom.code }}</span>
-                    <span class="label label-default inventory-units">{{ reservation.units }}</span>
-                    <small>{{ reservation.site_inventory.inventory.display_name }}</small>
-                  </div>
-                </a>
-              </div>
+      {% for reservation in period_details.reservations %}
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="pill-container pill-reserved">
+              <a role="button" data-toggle="modal" data-target="#reservation_{{ reservation.pk }}">
+                <div class="pill">
+                  <span class="label label-info inventory-room">{{ reservation.classroom.code }}</span>
+                  <span class="label label-default inventory-units">{{ reservation.units }}</span>
+                  <small>{{ reservation.site_inventory.inventory.display_name }}</small>
+                </div>
+              </a>
             </div>
           </div>
-          {% include "checkout/popover_modal.html" %}
-          {% include "checkout/delete_modal.html" %}
-        {% endfor %}
+        </div>
+        {% include "checkout/popover_modal.html" %}
+        {% include "checkout/delete_modal.html" %}
       {% endfor %}
     </div>
   </div> <!-- /reservations -->

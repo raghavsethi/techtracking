@@ -6,14 +6,30 @@
   <h2>Reserve Technology</h2>
   <hr />
   <form class="form-horizontal" action="{% url 'reserve' %}" method="post">
-    <input type="hidden" name="site_inventory_pk" value="{{ site_inventory.pk }}">
+    <input type="hidden" name="site_inventory" value="{{ selected_item.pk }}">
     <input type="hidden" name="request_date" value="{{ request_date.isoformat }}">
-    <input type="hidden" name="period" value="{{ period.0 }}">
+    <input type="hidden" name="period" value="{{ period.pk }}">
     {% csrf_token %}
-    <div class="form-group">
-      <label class="col-md-2 col-xs-3 control-label">Item Type</label>
-      <div class="col-md-10 col-xs-9">
-        <p class="form-control-static">{{ site_inventory.inventory.display_name }} ({{ site_inventory.inventory.model_identifier }})</p>
+    <div class="form-group item-form-group">
+      <label class="col-md-2 col-xs-3 control-label">
+        <strong>{{ selected_item.inventory.type.name }}</strong>
+      </label>
+      <div class="col-md-4 col-xs-9">
+        <select id="item_selector" name="technology_category" class="form-control" onchange="changeItem(event);">
+          <option value="{{ selected_item.pk }}">{{ selected_item.inventory.display_name }} ✓</option>
+          {% for category_item in category_items %}
+            <option value="{{ category_item.pk }}">{{ category_item.inventory.display_name }}</option>
+          {% empty %}
+            You must be part of at least one teaching team
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div id="item_loading_spinner" style="display: none">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
       </div>
     </div>
     <div class="form-group">
@@ -25,7 +41,7 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Units</label>
       <div class="col-md-10 col-xs-9">
-        <p class="form-control-static">{{ site_inventory.units }} total units available at {{ request.user.site }}</p>
+        <p class="form-control-static">{{ selected_item.units }} total units of {{ selected_item.inventory.display_name }} at {{ request.user.site }}</p>
       </div>
     </div>
     <div class="form-group">
@@ -63,7 +79,7 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Teaching Team</label>
       <div class="col-md-4 col-xs-9">
-        <select name="team_pk" class="form-control">
+        <select name="team" class="form-control">
           {% for team in teams %}
             <option value="{{ team.pk }}">{{ team }}</option>
           {% empty %}
@@ -75,7 +91,7 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Classroom</label>
       <div class="col-md-4 col-xs-9">
-        <select name="classroom_pk" class="form-control">
+        <select name="classroom" class="form-control">
           {% for classroom in classrooms %}
             <option value="{{ classroom.pk }}">{{ classroom.code }} ({{ classroom.name }})</option>
           {% empty %}
@@ -87,7 +103,7 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label">Purpose</label>
       <div class="col-md-4 col-xs-9">
-        <select name="purpose_pk" class="form-control">
+        <select name="purpose" class="form-control">
           {% for purpose in purpose_list %}
             <option value="{{ purpose.pk }}">{{ purpose.purpose }}</option>
           {% endfor %}
@@ -104,10 +120,10 @@
     <div class="form-group">
       <label class="col-md-2 col-xs-3 control-label"></label>
       <div class="col-md-5 col-xs-9 small-margin-top">
-        <input type="checkbox" id="same_units" onclick="checkValidReservation();"/>
+        <input type="checkbox" id="same_units" onchange="checkValidReservation();"/>
         Students need to use the same units over multiple reservations
         <p class="bg-warning" id="same_units_warning" style="padding: 10px; display: none">
-          Please reserve all available units at site ({{ site_inventory.units }}) for selected periods to guarantee that same units will be provided.
+          Please reserve all available units at site ({{ selected_item.units }}) for selected periods to guarantee that same units will be provided.
         </p>
       </div>
     </div>
@@ -148,5 +164,13 @@
         $('#period_' + periodId + '_error').hide();
       }
     });
+  }
+
+  function changeItem(event) {
+    var newItem = parseInt(event.target.value);
+    if (newItem !== {{ selected_item.pk }}) {
+      $('#item_loading_spinner').show();
+      window.location.href='{% url 'reserve_request' %}?site_inventory=' + newItem + '&date={{ request_date.isoformat }}&period={{ selected_period.id }}'
+    }
   }
 {% endblock %}

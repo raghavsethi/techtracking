@@ -103,12 +103,33 @@ def render_schedule(request, week: Week):
     return render(request, "checkout/week_reservations.html", context)
 
 
-@login_required
-def reserve_request(request):
+def get_available_inventory(site: Site, category: TechnologyCategory, request_date: date) -> \
+        Dict[SiteInventory, Dict[Period, int]]:
+
+    reservations: List[Reservation] = list(Reservation.objects.filter(
+        site_inventory__inventory__type=category, date=request_date))
+    category_inventory: List[SiteInventory] = list(site.siteinventory_set.filter(inventory__type=category))
+
+    free_units: Dict[SiteInventory, Dict[Period, int]] = {}
+    for inventory in category_inventory:
+        free_units[inventory] = {}
+        for period in sorted(Period.objects.all()):
+            free_units[inventory][period] = inventory.units
+
+    for existing_reservation in reservations:
+        free_units[existing_reservation.site_inventory][existing_reservation.period] -= existing_reservation.units
+
+    return free_units
+
+
+def pick_inventory(available: Dict[SiteInventory, Dict[Period, int]], selected_period: Period) -> SiteInventory:
+
+    return list(available.keys())[0]
+
+
+def render_reservation_request(request, request_date, selected_period, selected_item, item_inventory, category):
     user: User = request.user
-    request_date = datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
-    selected_period: Period = get_object_or_404(Period, pk=request.GET.get('period'))
-    site_inventory: SiteInventory = get_object_or_404(SiteInventory, pk=request.GET.get('site_assignment'))
+    site: Site = user.site
 
     if user.is_staff:
         teams = Team.objects.filter(site=user.site)
@@ -117,40 +138,46 @@ def reserve_request(request):
 
     if len(teams) == 0:
         logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
-        new_team: Team = Team.objects.create(
-            site=site_inventory.site,
-            subject=Subject.objects.get(name=Subject.ACTIVITY_SUBJECT))
-
+        new_team: Team = Team.objects.create(site=site, subject=Subject.objects.get(name=Subject.ACTIVITY_SUBJECT))
         new_team.members = [user]
         new_team.save()
         teams = [new_team]
 
-    existing_reservations: List[Reservation] = list(Reservation.objects.filter(
-        site_inventory=site_inventory, date=request_date))
-
-    used_units: Dict[Period, int] = {}
-    for period in sorted(Period.objects.all()):
-        used_units[period] = 0
-
-    for existing_reservation in existing_reservations:
-        used_units[existing_reservation.period] += existing_reservation.units
-
-    free_units: Dict[Tuple[int, str], int] = {}
-    for period, used in used_units.items():
-        free_units[period] = site_inventory.units - used
-
     context = {
         "sites": Site.objects.all(),
-        "site_inventory": site_inventory,
+        "selected_item": selected_item,
+        "category_items": [item for item in site.siteinventory_set.filter(inventory__type=category) if item != selected_item],
         "request_date": request_date,
         "teams": teams,
         "selected_period": selected_period,
-        "free_units": free_units,
-        "classrooms": Classroom.objects.filter(site=site_inventory.site),
+        "free_units": item_inventory,
+        "classrooms": Classroom.objects.filter(site=selected_item.site),
         "purpose_list": UsagePurpose.objects.all(),
     }
-
     return render(request, "checkout/request.html", context)
+
+
+@login_required
+def reserve_request(request):
+    user: User = request.user
+    request_date = datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
+    selected_period: Period = get_object_or_404(Period, pk=request.GET.get('period'))
+
+    item_inventory: Dict[Period, int] = None
+    category: TechnologyCategory = None
+    if 'site_inventory' in request.GET:
+        selected_item = SiteInventory.objects.get(pk=request.GET['site_inventory'])
+        category = selected_item.inventory.type
+        item_inventory = get_available_inventory(user.site, selected_item.inventory.type, request_date)[selected_item]
+    elif 'technology_category' in request.GET:
+        category = TechnologyCategory.objects.get(pk=request.GET['technology_category'])
+        category_inventory = get_available_inventory(user.site, category, request_date)
+        selected_item = pick_inventory(category_inventory, selected_period)
+        item_inventory = category_inventory[selected_item]
+    else:
+        return error_redirect(request, "Reservation request must contain site inventory or category")
+
+    return render_reservation_request(request, request_date, selected_period, selected_item, item_inventory, category)
 
 
 @login_required
@@ -158,9 +185,9 @@ def reserve_request(request):
 def reserve(request):
     user: User = request.user
     request_date = datetime.strptime(request.POST['request_date'], '%Y-%m-%d').date()
-    site_inventory: SiteInventory = get_object_or_404(SiteInventory, pk=request.POST['site_inventory_pk'])
-    team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
-    purpose: UsagePurpose = get_object_or_404(UsagePurpose, pk=request.POST['purpose_pk'])
+    site_inventory: SiteInventory = get_object_or_404(SiteInventory, pk=request.POST['site_inventory'])
+    team: Team = get_object_or_404(Team, pk=request.POST['team'])
+    purpose: UsagePurpose = get_object_or_404(UsagePurpose, pk=request.POST['purpose'])
     collaborative: bool = 'collaborative' in request.POST
 
     selected_periods = []
@@ -176,7 +203,7 @@ def reserve(request):
         return error_redirect(request, "Requested units must be set to a valid number")
 
     comment = request.POST['comment']
-    classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom_pk'])
+    classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom'])
 
     if requested_units < 1:
         return error_redirect(request, "You must request at least 1 unit of {}".format(site_inventory.inventory.display_name))
@@ -197,7 +224,7 @@ def reserve(request):
     # Then, create them all. This works because this entire handler is atomic.
     reserved_periods: List[str] = []
     for period in selected_periods:
-        logger.info("[%s] Creating new reservation: Team: %s, Inventory: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+        logger.info("[%s] Creating reservation: Team: %s, Inventory: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
                     request.user.email, team, site_inventory, classroom, requested_units, request_date, period)
 
         try:
