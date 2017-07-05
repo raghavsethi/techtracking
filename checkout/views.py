@@ -21,7 +21,7 @@ def index(request):
     weeks: List[Week] = sorted(list(site.week_set.all()))
 
     if len(weeks) < 1:
-        logger.error("%s: No week objects found for site %s", user, site)
+        logger.error("[%s] No week objects found for site %s", user.email, site)
         return HttpResponseBadRequest("At least one week must be configured for site %s" % site.name)
 
     week_number = weeks[0].week_number
@@ -35,7 +35,7 @@ def index(request):
         if today <= week.start_date:
             week_number = week.week_number
 
-    logger.info("%s: Resolved current week for %s to be %s", user, site, week_number)
+    logger.info("[%s] Resolved current week for %s to be %s", user.email, site, week_number)
     return week_schedule(request, week_number)
 
 
@@ -44,13 +44,13 @@ def week_schedule(request, week_number):
     user: User = request.user
     site: Site = user.site
 
-    logger.info("%s: Processing week %s schedule for %s", user, week_number, site)
+    logger.info("[%s] Processing week %s schedule for %s", user.email, week_number, site)
 
     # TODO: Show holidays grayed out in the UI
     try:
         week: Week = site.week_set.filter(week_number=week_number)[0]
     except IndexError:
-        logger.warning("%s: Received request for nonexistent week %s at site %s", user, week_number, site)
+        logger.warning("[%s] Received request for nonexistent week %s at site %s", user.email, week_number, site)
         return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
 
     days_in_week: List[Day] = sorted(list(week.days.all()))
@@ -82,7 +82,7 @@ def reserve_request(request):
     teams: List[Team] = Team.objects.filter(team__email=user.email).all()
 
     if len(teams) == 0:
-        logger.warning("%s: User is not part of any teams, creating new team..", user)
+        logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
         new_team: Team = Team.objects.create(site=site_sku.site)
         new_team.team = [user]
         new_team.save()
@@ -133,8 +133,8 @@ def reserve(request):
         messages.error(request, "You must request at least 1 unit of {}".format(site_sku.sku.display_name))
         return redirect('index')
 
-    logger.info("%s: Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
-                request.user, team, site_sku, classroom, requested_units, request_date, period_number)
+    logger.info("[%s] Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+                request.user.email, team, site_sku, classroom, requested_units, request_date, period_number)
 
     Reservation.objects.create(
         team=team, site_sku=site_sku, classroom=classroom, units=requested_units, date=request_date, period=period_number)
@@ -166,7 +166,7 @@ def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
     reservation.delete()
 
-    logger.info("%s: Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+    logger.info("[%s] Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
                 request.user.email,
                 reservation.team,
                 reservation.site_sku,
