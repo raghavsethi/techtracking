@@ -4,15 +4,15 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import SKU, Site, SiteAssignment, Classroom, TeachingTeam, TechnologyAssignment, User, Day, Week
+from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week
 
 
 admin.site.register(SKU)
 admin.site.register(Site)
-admin.site.register(SiteAssignment)
+admin.site.register(SiteSku)
 admin.site.register(Classroom)
-admin.site.register(TeachingTeam)
-admin.site.register(TechnologyAssignment)
+admin.site.register(Team)
+admin.site.register(Reservation)
 admin.site.register(Day)
 admin.site.register(Week)
 admin.site.unregister(Group)
@@ -57,7 +57,7 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'is_active', 'is_staff')
+        fields = ('email', 'password', 'is_active', 'is_staff', 'site')
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
@@ -74,10 +74,10 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'is_staff')
-    list_filter = ('is_staff',)
+    list_display = ('display_name', 'email', 'site', 'is_staff')
+    list_filter = ('is_staff', 'site')
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        (None, {'fields': ('email', 'password', 'display_name', 'site')}),
         ('Permissions', {'fields': ('is_staff',)}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -85,7 +85,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2')}),
+            'fields': ('email', 'display_name', 'password1', 'password2')}),
     )
     search_fields = ('email',)
     ordering = ('email',)

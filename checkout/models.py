@@ -5,25 +5,27 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from functools import total_ordering
 
+
 class SKU(models.Model):
     model_identifier = models.CharField(max_length=200)
-    shortname = models.CharField(max_length=200)
-    total_units = models.IntegerField()
+    display_name = models.CharField(max_length=50)
+    units = models.IntegerField()
 
     def __str__(self):
-        return "{} ({}) - {} units" .format(self.shortname, self.model_identifier, self.total_units)
+        return "{} ({}) - {} units" .format(self.display_name, self.model_identifier, self.units)
 
 
 class Site(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
 
-class SiteAssignment(models.Model):
-    # TODO: Rename SiteAssignment to SiteSKU
-    # TODO: add constraints so that only one of these can exist per site/sku pair
+class SiteSku(models.Model):
+    class Meta:
+        unique_together = (('site', 'sku'),)
+
     site = models.ForeignKey(Site)
     sku = models.ForeignKey(SKU)
 
@@ -31,29 +33,32 @@ class SiteAssignment(models.Model):
     units = models.IntegerField()
 
     def __str__(self):
-        return "{} - {} ({} units)".format(self.site, self.sku.shortname, self.units)
+        return "{} - {} ({} units)".format(self.site, self.sku.display_name, self.units)
 
 
 class Classroom(models.Model):
+    class Meta:
+        unique_together = (('site', 'name'),)
+
     site = models.ForeignKey(Site)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=50)
 
     def __str__(self):
         return "{} - {}".format(self.name, self.site)
 
 
-class TeachingTeam(models.Model):
+class Team(models.Model):
     site = models.ForeignKey(Site)
     team = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     def __str__(self):
-        return ", ".join([member.short_name for member in self.team.all()])
+        return ([member for member in self.team.all()])[0].get_short_name()
+        # return ", ".join([member.display_name for member in self.team.all()])
 
 
-class TechnologyAssignment(models.Model):
-    site = models.ForeignKey(Site)
-    teachers = models.ForeignKey(TeachingTeam)
-    technology = models.ForeignKey(SiteAssignment)
+class Reservation(models.Model):
+    team = models.ForeignKey(Team)
+    site_sku = models.ForeignKey(SiteSku)
     classroom = models.ForeignKey(Classroom)
     units = models.IntegerField()
     date = models.DateField()
@@ -71,7 +76,7 @@ class TechnologyAssignment(models.Model):
 
     def __str__(self):
         return "{} Class {} {} - {} {}".format(
-            self.get_period_display(), self.classroom.name, self.teachers, self.units, self.technology.sku.shortname)
+            self.get_period_display(), self.classroom.name, self.team, self.units, self.site_sku.sku.shortname)
 
 
 # Need to figure out how to autogenerate these
@@ -92,6 +97,9 @@ class Day(models.Model):
 # Will not be visible in the admin UI by default
 @total_ordering
 class Week(models.Model):
+    class Meta:
+        unique_together = (('site', 'week_number'),)
+
     NUM_WEEKS = 5
 
     site = models.ForeignKey(Site)
@@ -111,10 +119,12 @@ class Week(models.Model):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class Meta:
+        unique_together = (('site', 'display_name'),)
+
     site = models.ForeignKey(Site, null=True)
-    email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=200)
-    short_name = models.CharField(max_length=30)
+    email = models.EmailField(unique=True, primary_key=True)
+    display_name = models.CharField(max_length=50)
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
@@ -131,19 +141,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
-        help_text=_('Designates whether the user can log into this site.'),
+        help_text=_('Designates whether the user can log into the admin site.'),
     )
 
     user_manager = CheckoutUserManager()
 
     def get_full_name(self):
-        return self.full_name
+        return self.display_name
 
     def get_short_name(self):
-        return self.short_name
+        return self.display_name
 
     def __str__(self):
-        if self.full_name :
-            return "{} ({}) - {}".format(self.full_name, self.email, self.site)
-        else:
-            return "{} - {}".format(self.email, self.site)
+        return "{} - {}".format(self.email, self.site)

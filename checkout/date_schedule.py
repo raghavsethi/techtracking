@@ -11,17 +11,17 @@ class DateSchedule:
         self.date: datetime.date = date
         self.periods: List[PeriodTechAvailability] = []
 
-        site_skus: List[SiteAssignment] = list(self.site.siteassignment_set.all())
-        periods: Tuple[Tuple[int, str]] = TechnologyAssignment.PERIODS
-        assignments: List[TechnologyAssignment] = \
-            list(TechnologyAssignment.objects.filter(site=self.site, date=self.date).all())
+        site_skus: List[SiteSku] = list(self.site.sitesku_set.all())
+        periods: Tuple[Tuple[int, str]] = Reservation.PERIODS
+        assignments: List[Reservation] = \
+            list(Reservation.objects.filter(site_sku__site=self.site, date=self.date).all())
 
         for period in periods:
             period_sku_availability = []
             for site_sku in site_skus:
                 site_sku_reservations = []
                 for assignment in assignments:
-                    if assignment.period == period[0] and assignment.technology == site_sku:
+                    if assignment.period == period[0] and assignment.site_sku == site_sku:
                         site_sku_reservations.append(assignment)
 
                 period_sku_availability.append(PeriodSKUAvailability(site_sku, site_sku_reservations))
@@ -44,9 +44,9 @@ class PeriodTechAvailability:
 
 
 class PeriodSKUAvailability:
-    def __init__(self, site_sku: SiteAssignment, reservations: List[TechnologyAssignment]):
-        self.site_sku: SiteAssignment = site_sku
-        self.reservations: List[TechnologyAssignment] = reservations
+    def __init__(self, site_sku: SiteSku, reservations: List[Reservation]):
+        self.site_sku: SiteSku = site_sku
+        self.reservations: List[Reservation] = reservations
 
         used_count = 0
         for reservation in reservations:

@@ -5,7 +5,7 @@ from django.http import HttpResponseForbidden, HttpResponseServerError, HttpResp
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-from checkout.models import TechnologyAssignment, Week, Day, Site, User, SiteAssignment, TeachingTeam, Classroom
+from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom
 from checkout.date_schedule import DateSchedule
 
 
@@ -65,9 +65,9 @@ def week_schedule(request, week_number):
         "previous_week": None if week.week_number < 2 else (week.week_number - 1),
         "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
-        "periods": TechnologyAssignment.PERIODS,
+        "periods": Reservation.PERIODS,
         "username": user.email,
-        "full_name": user.full_name,
+        "display_name": user.display_name,
         "week_schedule": week_schedule,
     }
 
@@ -80,11 +80,11 @@ def reserve_request(request):
     site_assignment_pk = int(request.GET.get('site_assignment'))
     request_date = datetime.strptime(request.GET.get('date'), '%Y-%m-%d').date()
     period_number = int(request.GET.get('period'))
-    site_assignment: SiteAssignment = SiteAssignment.objects.get(pk=site_assignment_pk)
-    teams = TeachingTeam.objects.filter(team__email=user.email)
+    site_assignment: SiteSku = SiteSku.objects.get(pk=site_assignment_pk)
+    teams = Team.objects.filter(team__email=user.email)
 
-    reservations: List[TechnologyAssignment] = list(TechnologyAssignment.objects.filter(
-        technology=site_assignment, date=request_date, period=period_number))
+    reservations: List[Reservation] = list(Reservation.objects.filter(
+        site_sku=site_assignment, date=request_date, period=period_number))
     used_units = 0
     for reservation in reservations:
         used_units += reservation.units
@@ -94,7 +94,7 @@ def reserve_request(request):
         "site_assignment": site_assignment,
         "request_date": request_date,
         "teams": teams,
-        "period": TechnologyAssignment.PERIODS[period_number - 1],
+        "period": Reservation.PERIODS[period_number - 1],
         "free_units": site_assignment.units - used_units,
         "classrooms": Classroom.objects.filter(site=site_assignment.site)
     }
@@ -106,13 +106,13 @@ def reserve_request(request):
 def reserve(request):
     site_assignment_pk = int(request.POST['site_assignment_pk'])
     request_date = datetime.strptime(request.POST['request_date'], '%Y-%m-%d').date()
-    site_assignment: SiteAssignment = SiteAssignment.objects.get(pk=site_assignment_pk)
+    site_assignment: SiteSku = SiteSku.objects.get(pk=site_assignment_pk)
     period_number = int(request.POST['period'])
     units = int(request.POST['request_units'])
-    team: TeachingTeam = TeachingTeam.objects.get(pk=request.POST['team_pk'])
+    team: Team = Team.objects.get(pk=request.POST['team_pk'])
     classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom_pk'])
 
-    assignment = TechnologyAssignment(site=site_assignment.site, teachers=team, technology=site_assignment, classroom=classroom, units=units, date=request_date, period=period_number)
+    assignment = Reservation(team=team, site_sku=site_assignment, classroom=classroom, units=units, date=request_date, period=period_number)
     assignment.save()
 
     return redirect('index')
