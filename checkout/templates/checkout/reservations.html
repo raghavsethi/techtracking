@@ -5,26 +5,32 @@
 {% block content %}
   <h2>My Reservations</h2>
   <hr/>
+  <h4>Upcoming Reservations</h4>
   <table class="table table-striped">
-    <thead>
-    <tr>
-      <th>Date</th>
-      <th>Period</th>
-      <th>Team</th>
-      <th>Technology</th>
-      <th>Units</th>
-      <th>Location</th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for reservation in reservations %}
+    {% if future_reservations or past_reservations %}
+      <thead>
       <tr>
-        <td>{{ reservation.date|date:"M d, Y - l" }}</td>
+        <th>Date</th>
+        <th>Period</th>
+        <th>Team</th>
+        <th>Units</th>
+        <th>Technology</th>
+        <th>Location</th>
+        <th></th>
+      </tr>
+      </thead>
+    <tbody>
+    {% for reservation in future_reservations %}
+      <tr>
+        <td>{{ reservation.date|date:"l, M d" }}</td>
         <td>{{ reservation.period.name }}</td>
         <td>{{ reservation.team }}</td>
-        <td>{{ reservation.site_sku.sku.display_name }} ({{ reservation.site_sku.sku.model_identifier }})</td>
         <td>{{ reservation.units }}</td>
+        <td>
+          {{ reservation.site_sku.sku.display_name }}
+          <br/>
+          <small class="text-muted">{{ reservation.site_sku.sku.model_identifier }}</small>
+        </td>
         <td>{{ reservation.classroom }}</td>
         <td class="text-right">
           <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
@@ -35,12 +41,45 @@
 
         </td>
       </tr>
-    {% empty %}
+      {% endfor %}
+      <tr style="background-color: #fff">
+        <td colspan="7">
+          <br />
+          <h4>Past Reservations</h4>
+        </td>
+      </tr>
+      {% for reservation in past_reservations %}
+        <tr>
+          <td>{{ reservation.date|date:"l, M d" }}</td>
+          <td>{{ reservation.period.name }}</td>
+          <td>{{ reservation.team }}</td>
+          <td>{{ reservation.units }}</td>
+          <td>
+            {{ reservation.site_sku.sku.display_name }}
+            <br/>
+            <small class="text-muted">{{ reservation.site_sku.sku.model_identifier }}</small>
+          </td>
+          <td>{{ reservation.classroom }}</td>
+          <td class="text-right">
+            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                    data-target="#reservation_delete_{{ reservation.pk }}"><span
+                class="glyphicon glyphicon-trash"></span>
+            </button>
+
+            {% include "checkout/delete_modal.html" %}
+
+          </td>
+        </tr>
+      {% endfor %}
+    {% else %}
       <div class="alert alert-warning">
-        You have not made any reservations yet. Click a period in the <a href="{% url 'index' %}">schedule</a> to make a reservation.
+        You don't have any reservations. Click a period in the <a href="{% url 'index' %}">schedule</a> to make
+        a reservation.
       </div>
-    {% endfor %}
+    {% endif %}
     </tbody>
   </table>
+  <br/>
+
 
 {% endblock %}

@@ -252,15 +252,21 @@ def reservations(request):
     user: User = request.user
 
     teams: List[Team] = Team.objects.filter(members__email=user.email).all()
-    user_reservations: List[Reservation] = []
+    past_reservations: List[Reservation] = []
+    future_reservations: List[Reservation] = []
 
     for team in teams:
-        user_reservations.extend(Reservation.objects.filter(team=team))
+        for reservation in Reservation.objects.filter(team=team):
+            if reservation.date < datetime.now().date():
+                past_reservations.append(reservation)
+            else:
+                future_reservations.append(reservation)
 
     context = {
         "aimhigh_site": user.site,
         "user": user,
-        "reservations": sorted(user_reservations)
+        "past_reservations": sorted(past_reservations),
+        "future_reservations": sorted(future_reservations)
     }
 
     return render(request, "checkout/reservations.html", context)
