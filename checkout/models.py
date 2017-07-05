@@ -125,7 +125,7 @@ class Period(models.Model):
     name = models.CharField(max_length=12, help_text='e.g. Period 3, Activity 2')
 
     def __eq__(self, other):
-        return self.name == other.name and self.number == other.number
+        return self.pk == other.pk
 
     def __lt__(self, other):
         return self.number < other.number
@@ -159,10 +159,7 @@ class Reservation(models.Model):
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
     def __eq__(self, other):
-        return (
-            self.team == other.team and self.site_sku == other.site_sku and self.classroom == other.classroom and
-            self.units == other.units and self.date == other.date and self.period == other.period and
-            self.creator == other.creator)
+        return self.pk == other.pk
 
     def __lt__(self, other):
         if self.date != other.date:
