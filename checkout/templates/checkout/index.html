@@ -49,33 +49,41 @@
 
 <div class="body">
     <div class="container">
-        <h1>{{ week.name }} Schedule</h1>
+        <h1>Week {{ week.week_number }} Schedule</h1>
         {% if week_schedule %}
-        <ul>
-            {% for date_schedule in week_schedule %}
-            <li>{{ date_schedule.date }}</li>
-            <ul>
-                {% for period in date_schedule.periods %}
-                <li>{{ period.period_text }}</li>
-                <ul>
-                    {% for sku in period.skus %}
-                    {% if sku.free_count == sku.site_sku.units %}
-                    <li>{{ sku.site_sku.sku.shortname }} - All available</li>
-                    {% else %}
-                    <li>{{ sku.site_sku.sku.shortname }} - Free {{ sku.free_count }} (of {{ sku.site_sku.units }})</li>
-                    {% endif %}
-                    {% endfor %}
-                </ul>
-                {% endfor %}
-            </ul>
+        <div class="row">
+            <div class="col-md-2"></div>
+            {% for day in days %}
+            <div class="col-md-2">
+                {{ day.date }}
+            </div>
             {% endfor %}
-        </ul>
+        </div>
+        {% for period in periods %}
+        <div class="row">
+            <div class="col-md-2">{{ period.1 }}</div>
+            {% for day in week_schedule %}
+            <div class="col-md-2">
+                {% for period_tech_availability in day.periods %}
+                {% if period_tech_availability.period_number == period.0 %}
+                {% for sku in period_tech_availability.skus %}
+                <div class="row">
+                    <div class="col-xs-6">
+                        {{ sku.free_count }} {{ sku.site_sku.sku.shortname }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
         {% else %}
         <p>Schedule is not available.</p>
         {% endif %}
-
-    </div><!-- /.container -->
-</div>
+    </div>
+</div><!-- /.container -->
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>

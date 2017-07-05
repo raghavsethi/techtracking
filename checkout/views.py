@@ -1,7 +1,10 @@
+from typing import List
+
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+from checkout.models import TechnologyAssignment, Week, Day
 from checkout.date_schedule import DateSchedule
 
 
@@ -17,17 +20,20 @@ def index(request):
     site = user.site
 
     # TODO: Do week math
-    weeks = site.week_set.all()
-    week = weeks[0]
+    weeks: List[Week] = list(site.week_set.all())
+    week: Week = weeks[0]
 
     # TODO: Figure out sorting
-    week_schedule = []
-    for day in week.days.all():
+    week_schedule: List[DateSchedule] = []
+    days_in_week: List[Day] = list(week.days.all())
+    for day in days_in_week:
         week_schedule.append(DateSchedule(site, day.date))
 
     context = {
         "site": site,
         "week": week,
+        "days": days_in_week,
+        "periods": TechnologyAssignment.PERIODS,
         "username": user.email,
         "full_name": user.full_name,
         "week_schedule": week_schedule,
