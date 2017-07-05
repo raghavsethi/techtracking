@@ -39,6 +39,60 @@ def index(request):
     return week_schedule(request, week_number)
 
 
+def site_schedule(request, site_id):
+    site: Site = get_object_or_404(Site, pk=site_id)
+    weeks: List[Week] = sorted(list(site.week_set.all()))
+
+    if len(weeks) < 1:
+        logger.error("[logged-out] No week objects found for site %s", site)
+        return HttpResponseBadRequest("At least one week must be configured for site %s" % site.name)
+
+    week_number = weeks[0].week_number
+    today = datetime.now().date()
+
+    # TODO: Test this logic
+    for week in weeks:
+        if week.start_date <= today <= week.end_date:
+            week_number = week.week_number
+            break
+        if today <= week.start_date:
+            week_number = week.week_number
+
+    logger.info("[logged-out] Resolved current week for %s to be %s", site, week_number)
+
+    return site_week_schedule(request, site_id, week_number)
+
+
+def site_week_schedule(request, site_id, week_number):
+    site: Site = get_object_or_404(Site, pk=site_id)
+
+    try:
+        week: Week = site.week_set.filter(week_number=week_number)[0]
+    except IndexError:
+        logger.warning("[logged-out] Received request for nonexistent week %s at site %s", week_number, site)
+        return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
+
+    logger.info("[logged-out] Processing week %s schedule for %s", week_number, site)
+
+    days_in_week: List[Day] = sorted(list(week.days.all()))
+
+    schedule: List[DateSchedule] = []
+    for day in days_in_week:
+        schedule.append(DateSchedule(site, day.date))
+
+    context = {
+        "aimhigh_site": site,
+        "week": week,
+        "previous_week": None if week.week_number < 2 else (week.week_number - 1),
+        "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
+        "calendar_days": days_in_week,  # TODO: make this all calendar days in week
+        "periods": Reservation.PERIODS,
+        "schedule": schedule,
+    }
+
+    return render(request, "checkout/week.html", context)
+
+
 @login_required
 def week_schedule(request, week_number):
     user: User = request.user
@@ -60,7 +114,7 @@ def week_schedule(request, week_number):
         schedule.append(DateSchedule(site, day.date))
 
     context = {
-        "site": site,
+        "aimhigh_site": site,
         "week": week,
         "previous_week": None if week.week_number < 2 else (week.week_number - 1),
         "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
@@ -95,7 +149,7 @@ def reserve_request(request):
         used_units += existing_reservation.units
 
     context = {
-        "site": site_sku.site,
+        "aimhigh_site": site_sku.site,
         "site_sku": site_sku,
         "request_date": request_date,
         "teams": teams,
@@ -161,6 +215,7 @@ def reservations(request):
         user_reservations.extend(Reservation.objects.filter(team=team))
 
     context = {
+        "aimhigh_site": user.site,
         "user": user,
         "reservations": sorted(user_reservations),
         "period_mapping": Reservation.PERIODS,
