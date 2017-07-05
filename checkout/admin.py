@@ -193,7 +193,7 @@ class SiteSkuAdmin(admin.ModelAdmin):
 
 
 @admin.register(SKU)
-class SkuAdmin(admin.ModelAdmin):
+class SkuAdmin(ImportExportModelAdmin):
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
 
     def total_units_display(self, sku: SKU):
@@ -207,6 +207,12 @@ class SkuAdmin(admin.ModelAdmin):
 
         return assigned_units
     assigned_units_display.short_description = "Assigned Units"
+
+    def get_export_formats(self):
+        return [f for f in [base_formats.CSV, base_formats.XLS, base_formats.XLSX] if f().can_export()]
+
+    def get_import_formats(self):
+        return [f for f in [base_formats.CSV, base_formats.XLS, base_formats.XLSX] if f().can_import()]
 
 
 @admin.register(Team)
