@@ -1,13 +1,11 @@
 from typing import List, Dict, Tuple
 from datetime import datetime
 
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
 from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import reverse
 
 from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom, Period, Subject
 from checkout.date_schedule import DateSchedule
@@ -15,14 +13,6 @@ from checkout.utils import error_redirect, success_redirect
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-@staff_member_required
-def admin(request):
-    if request.user.is_superuser:
-        return redirect(reverse('superuser_admin:index'))
-
-    return redirect(reverse('staff_admin:index'))
 
 
 @login_required

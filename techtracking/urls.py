@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-from checkout.admin import superuser_admin_site, staff_admin_site
+from django.contrib import admin
 
 import checkout.views
 
@@ -27,8 +27,6 @@ urlpatterns = [
     url(r'^reserve/', checkout.views.reserve, name='reserve'),
     url(r'^reservations/', checkout.views.reservations, name='reservations'),
     url(r'^delete/', checkout.views.delete, name='delete'),
-    url(r'^admin/', checkout.views.admin, name='admin'),
-    url(r'^superuser_admin/', superuser_admin_site.urls),
-    url(r'^staff_admin/', staff_admin_site.urls),
+    url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('django.contrib.auth.urls')),
 ]

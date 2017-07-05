@@ -3,25 +3,11 @@ from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.contrib.auth.models import Group
 from import_export.admin import ImportExportModelAdmin
 
 from checkout.bulk_imports import TeamResource, UserResource
 from checkout.models import *
-
-
-class SuperuserAdminSite(AdminSite):
-    site_title = 'Aim High - Checkout System Admin'
-    site_header = 'Aim High - Checkout System'
-    index_title = 'Superuser Administration'
-
-    def has_permission(self, request):
-        return request.user.is_superuser
-
-
-class SiteDirectorAdminSite(AdminSite):
-    site_title = 'Aim High - Checkout System Admin'
-    site_header = 'Aim High - Checkout System'
-    index_title = "Site Director Administration"
 
 
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
@@ -72,7 +58,8 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 
-class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
+@admin.register(User)
+class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     resource_class = UserResource
 
     def send_welcome_email(self, request, queryset):
@@ -92,7 +79,7 @@ class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('name', 'email', 'site', 'is_staff')
+    list_display = ('name', 'email', 'site', 'is_staff', 'activated')
     list_filter = ('is_staff', 'site')
     fieldsets = (
         (None, {'fields': ('email', 'password', 'name', 'site')}),
@@ -109,11 +96,29 @@ class StaffUserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     ordering = ('email',)
     filter_horizontal = ()
 
+    def activated(self, user: User):
+        return user.has_usable_password()
+    activated.boolean = True
 
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def get_queryset(self, request):
+        qs = super(UserAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(site=request.user.site)
+
+
+@admin.register(Classroom)
 class ClassroomAdmin(admin.ModelAdmin):
     search_fields = ('code', 'name', 'site__name',)
     list_display = ('code', 'name', 'site')
     list_filter = ('site',)
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
 
     def get_queryset(self, request):
         qs = super(ClassroomAdmin, self).get_queryset(request)
@@ -124,6 +129,7 @@ class ClassroomAdmin(admin.ModelAdmin):
 
 
 # noinspection PyMethodMayBeStatic
+@admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__name',)
@@ -135,13 +141,14 @@ class ReservationAdmin(admin.ModelAdmin):
 
     def site_sku__site(self, reservation: Reservation):
         return reservation.site_sku.site
-
     site_sku__site.short_description = "Site"
 
     def site_sku__sku__display_name(self, reservation: Reservation):
         return reservation.site_sku.sku.display_name
-
     site_sku__sku__display_name.short_description = "SKU Name"
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
 
     def get_queryset(self, request):
         qs = super(ReservationAdmin, self).get_queryset(request)
@@ -151,6 +158,7 @@ class ReservationAdmin(admin.ModelAdmin):
         return qs.filter(site_sku__site=request.user.site)
 
 
+@admin.register(SiteSku)
 class SiteSkuAdmin(admin.ModelAdmin):
     list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
     list_filter = ('site', 'sku__display_name')
@@ -163,6 +171,9 @@ class SiteSkuAdmin(admin.ModelAdmin):
         return site_sku.units
     units_display.short_description = "Assigned Units"
 
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
     def get_queryset(self, request):
         qs = super(SiteSkuAdmin, self).get_queryset(request)
         if request.user.is_superuser:
@@ -171,6 +182,7 @@ class SiteSkuAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
+@admin.register(SKU)
 class SkuAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
 
@@ -184,10 +196,10 @@ class SkuAdmin(admin.ModelAdmin):
             assigned_units += site_sku.units
 
         return assigned_units
-
     assigned_units_display.short_description = "Assigned Units"
 
 
+@admin.register(Team)
 class TeamAdmin(ImportExportModelAdmin):
     resource_class = TeamResource
 
@@ -199,6 +211,9 @@ class TeamAdmin(ImportExportModelAdmin):
         return ", ".join([member.get_short_name() for member in team.members.all()])
     team_display.short_description = "Team"
 
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
     def get_queryset(self, request):
         qs = super(TeamAdmin, self).get_queryset(request)
         if request.user.is_superuser:
@@ -208,6 +223,7 @@ class TeamAdmin(ImportExportModelAdmin):
 
 
 # noinspection PyMethodMayBeStatic
+@admin.register(Week)
 class WeekAdmin(admin.ModelAdmin):
     list_display = ('site_week', 'start_date', 'end_date', 'working_days')
     list_filter = ('site',)
@@ -218,6 +234,9 @@ class WeekAdmin(admin.ModelAdmin):
     def site_week(self, week: Week):
         return week.site.name + " - Week " + str(week.week_number)
 
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
     def get_queryset(self, request):
         qs = super(WeekAdmin, self).get_queryset(request)
         if request.user.is_superuser:
@@ -226,6 +245,7 @@ class WeekAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
+@admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
     list_display = ('name', 'users', 'activated_users', 'classrooms', 'periods', 'reservations', 'skus_allocated', 'total_units_allocated')
 
@@ -262,9 +282,13 @@ class SiteAdmin(admin.ModelAdmin):
         return total
 
 
+@admin.register(Period)
 class PeriodAdmin(admin.ModelAdmin):
     list_display = ('name', 'number', 'site')
     list_filter = ('site',)
+
+    def has_module_permission(self, request):
+        return request.user.is_staff
 
     def get_queryset(self, request):
         qs = super(PeriodAdmin, self).get_queryset(request)
@@ -273,25 +297,4 @@ class PeriodAdmin(admin.ModelAdmin):
 
         return qs.filter(site=request.user.site)
 
-superuser_admin_site = SuperuserAdminSite(name='superuser_admin')
-superuser_admin_site.register(User, StaffUserAdmin)
-superuser_admin_site.register(Classroom, ClassroomAdmin)
-superuser_admin_site.register(Reservation, ReservationAdmin)
-superuser_admin_site.register(SiteSku, SiteSkuAdmin)
-superuser_admin_site.register(SKU, SkuAdmin)
-superuser_admin_site.register(Team, TeamAdmin)
-superuser_admin_site.register(Week, WeekAdmin)
-superuser_admin_site.register(Site, SiteAdmin)
-superuser_admin_site.register(Period, PeriodAdmin)
-superuser_admin_site.register(Day)
-superuser_admin_site.register(Subject)
-
-staff_admin_site = SiteDirectorAdminSite(name='staff_admin')
-staff_admin_site.register(User, StaffUserAdmin)
-staff_admin_site.register(Classroom, ClassroomAdmin)
-staff_admin_site.register(Reservation, ReservationAdmin)
-staff_admin_site.register(SiteSku, SiteSkuAdmin)
-staff_admin_site.register(Team, TeamAdmin)
-staff_admin_site.register(Week, WeekAdmin)
-staff_admin_site.register(Period, PeriodAdmin)
-
+admin.site.unregister(Group)

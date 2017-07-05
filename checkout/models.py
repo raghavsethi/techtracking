@@ -63,7 +63,7 @@ class Classroom(models.Model):
 
 class Subject(models.Model):
     ACTIVITY_SUBJECT = "Activity/Ad-hoc"
-    
+
     name = models.CharField(max_length=100, primary_key=True)
 
     def __str__(self):
@@ -214,6 +214,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return "{} - {}".format(self.email, self.site)
+
+    def has_perm(self, perm, obj=None):
+        return True
 
     def send_welcome_email(self):
         """
