@@ -5,25 +5,59 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 
 ## First time setup (for Macs)
 
+### Homebrew and Git
 * Open a terminal (Terminal.app, if you don't have another one you prefer)
-* Install [Homebrew](https://brew.sh/) (if you haven't already)
-* Install Python 3 (if you haven't already)
+* Check if you have homebrew installed
 ```commandline
-    brew install python3
+    brew -v
 ```
-* Install virtualenv (if you haven't already)
+* If you do not see a version number, install Homebrew: [link](https://brew.sh/)
+* Check if you have git installed
 ```commandline
-    pip install virtualenv
+    git --version
 ```
-* Install git (if you haven't already)
+* If it is unavailable, install it
 ```commandline
     brew install git
 ```
+
+### Python 3.6 and virtualenv
+* Check what version of Python you have installed
+```commandline
+    python --version
+```
+* If the version is newer than 3.6, great! Skip to the next section. If the version is 2.x, you should try
+```commandline
+    python3 --version
+```
+* If `python3` was not found, run:
+```commandline
+    brew install python3
+```
+* If `python3` was found, but the version was older than 3.6:
+```commandline
+    brew upgrade python3
+```
+* Check what version of `pip` you have:
+```commandline
+    pip --version
+```
+* If the command prints out a line that ends in `(python 2.7)`, run
+```commandline
+    pip3 install virtualenv
+```
+* If, instead, the command had printed out a line that ended in `(python 3.)`, run
+```commandline
+    pip install virtualenv
+```
+
+### Clone the repository
+
 * [Fork this repository](https://bitbucket.org/ycoreaimhigh/techtracking/fork). This will create a copy of the source
   code on BitBucket.
 * Clone your copy of the repository into a folder of your choice (replace raghavsethi with your username)
 ```commandline
-    git clone git@bitbucket.org:raghavsethi/techtracking.git
+    git clone https://raghavsethi@bitbucket.org/raghavsethi/techtracking.git
 ```
 * Change into this directory
 ```commandline
@@ -33,12 +67,14 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     virtualenv venv
 ```
+
+### Install libraries, Postgres, set up database
+* [Install Postgres](http://postgresapp.com/)
+* Run the newly installed Postgres.app, and click the initialize button
 * Activate the virtualenv
 ```commandline
     source venv/bin/activate
 ```
-* [Install Postgres](https://devcenter.heroku.com/articles/heroku-postgresql#local-setup). Be sure to follow the
-  Mac-specific instructions.
 * Install the required libraries
 ```commandline
     pip install -r requirements.txt
@@ -48,8 +84,18 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     python manage.py makemigrations
     python manage.py migrate
 ```
-
-* To exit the virtualenv (when you're done)
+* Create a superuser
+```commandline
+    python manage.py createsuperuser
+```
+* Run the local server
+```commandline
+    python manage.py runserver
+```
+* Open up the admin interface `http://localhost:8000`
+* Create the minimum required entries in the database
+(sites, weeks etc.)
+* Exit the virtualenv (when you're done)
 ```commandline
     deactivate
 ```
