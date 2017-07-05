@@ -7,10 +7,6 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import SKU, Site, SiteSku, Classroom, Team, Reservation, User, Day, Week
 
 
-admin.site.register(Day)
-admin.site.unregister(Group)
-
-
 # Source:  https://medium.com/@ramykhuffash/django-authentication-with-just-an-email-and-password-no-username-required\
 # -33e47976b517
 class UserCreationForm(forms.ModelForm):
@@ -59,6 +55,7 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 
+@admin.register(User)
 class UserAdmin(BaseUserAdmin):
     # The forms to add and change user instances
     form = UserChangeForm
@@ -85,6 +82,7 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
+@admin.register(Classroom)
 class ClassroomAdmin(admin.ModelAdmin):
     search_fields = ('code', 'name', 'site__name',)
     list_display = ('code', 'name', 'site')
@@ -99,6 +97,7 @@ class ClassroomAdmin(admin.ModelAdmin):
 
 
 # noinspection PyMethodMayBeStatic
+@admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__display_name',)
@@ -126,6 +125,7 @@ class ReservationAdmin(admin.ModelAdmin):
         return qs.filter(site_sku__site=request.user.site)
 
 
+@admin.register(SiteSku)
 class SiteSkuAdmin(admin.ModelAdmin):
     list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
     list_filter = ('site', 'sku__display_name')
@@ -146,6 +146,7 @@ class SiteSkuAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
+@admin.register(SKU)
 class SkuAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
 
@@ -163,6 +164,7 @@ class SkuAdmin(admin.ModelAdmin):
     assigned_units_display.short_description = "Assigned Units"
 
 
+@admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     search_fields = ('team__display_name',)
     list_display = ('team_display', 'site')
@@ -181,6 +183,7 @@ class TeamAdmin(admin.ModelAdmin):
 
 
 # noinspection PyMethodMayBeStatic
+@admin.register(Week)
 class WeekAdmin(admin.ModelAdmin):
     list_display = ('site_week', 'start_date', 'end_date', 'working_days')
     list_filter = ('site',)
@@ -199,6 +202,7 @@ class WeekAdmin(admin.ModelAdmin):
         return qs.filter(site=request.user.site)
 
 
+@admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(SiteAdmin, self).get_queryset(request)
@@ -208,11 +212,5 @@ class SiteAdmin(admin.ModelAdmin):
         return qs.filter(id=request.user.site.id)
 
 
-admin.site.register(User, UserAdmin)
-admin.site.register(Classroom, ClassroomAdmin)
-admin.site.register(Reservation, ReservationAdmin)
-admin.site.register(SiteSku, SiteSkuAdmin)
-admin.site.register(SKU, SkuAdmin)
-admin.site.register(Team, TeamAdmin)
-admin.site.register(Week, WeekAdmin)
-admin.site.register(Site, SiteAdmin)
+admin.site.register(Day)
+admin.site.unregister(Group)
