@@ -88,13 +88,16 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     python manage.py createsuperuser
 ```
+* Run the setup script
+```commandline
+    python manage.py setup
+```
 * Run the local server
 ```commandline
     python manage.py runserver
 ```
-* Open up the admin interface `http://localhost:8000`
-* Create the minimum required entries in the database
-(sites, weeks etc.)
+* Open up the admin interface `http://localhost:8000/admin`
+* Create the minimum required entries in the database (weeks, SKUs etc.)
 * Exit the virtualenv (when you're done)
 ```commandline
     deactivate

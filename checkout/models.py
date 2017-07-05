@@ -103,7 +103,6 @@ class Reservation(models.Model):
             self.get_period_display(), self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
 
 
-# Need to figure out how to autogenerate these
 @total_ordering
 class Day(models.Model):
     date = models.DateField(primary_key=True)
@@ -143,19 +142,6 @@ class Week(models.Model):
             self.site, self.week_number, len(self.days.all()), self.start_date, self.end_date)
 
 
-@receiver(post_save, sender=Week, dispatch_uid="create_default_days")
-def update_stock(sender, instance: Week, **kwargs):
-    if len(instance.days.all()) == 0:
-        days_delta: timedelta = instance.end_date - instance.start_date
-        num_days = days_delta.days
-        for day_number in range(0, num_days + 1):
-            date = instance.start_date + timedelta(days=day_number)
-            try:
-                Day.objects.get(date=date)
-            except ObjectDoesNotExist:
-                Day.objects.create(date=date)
-
-
 class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         unique_together = (('site', 'display_name'),)
@@ -183,6 +169,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     user_manager = CheckoutUserManager()
+    objects = user_manager
 
     def get_full_name(self):
         return self.display_name
