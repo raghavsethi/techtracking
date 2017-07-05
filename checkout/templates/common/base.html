@@ -164,7 +164,7 @@
 <script type="text/javascript">
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
-    })
+    });
 
     $(document).ready(function () {
         window.setTimeout(function () {
@@ -173,6 +173,17 @@
             });
         }, 5000);
     });
+
+    $(".reserve-button").click(function() {
+        var glyphicon = $(this.children[0]);
+
+        if (glyphicon.hasClass("glyphicon-plus")) {
+            glyphicon.removeClass("glyphicon-plus").addClass("glyphicon-chevron-up");
+        }
+        else {
+            glyphicon.removeClass("glyphicon-chevron-up").addClass("glyphicon-plus");
+        }
+  });
 </script>
 </body>
 </html>
