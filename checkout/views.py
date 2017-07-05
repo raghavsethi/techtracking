@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 
-from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom, Period
+from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom, Period, Subject
 from checkout.date_schedule import DateSchedule
 from checkout.utils import error_redirect, success_redirect
 
@@ -144,7 +144,10 @@ def reserve_request(request):
 
     if len(teams) == 0:
         logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
-        new_team: Team = Team.objects.create(site=site_sku.site)
+        new_team: Team = Team.objects.create(
+            site=site_sku.site,
+            subject=Subject.objects.get(name=Subject.ACTIVITY_SUBJECT))
+
         new_team.members = [user]
         new_team.save()
         teams = [new_team]

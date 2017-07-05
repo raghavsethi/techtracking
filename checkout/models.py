@@ -62,6 +62,8 @@ class Classroom(models.Model):
 
 
 class Subject(models.Model):
+    ACTIVITY_SUBJECT = "Activity/Ad-hoc"
+    
     name = models.CharField(max_length=100, primary_key=True)
 
     def __str__(self):

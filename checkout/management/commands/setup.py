@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
-from checkout.models import Day, Site, User
+from checkout.models import Day, Site, User, Subject
 
 
 def read_date(prompt: str) -> date:
@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
         if len(superusers) > 1:
             self.stdout.write('Multiple superusers are present, skipping step..')
-            self.stdout.write()
+            self.stdout.write('')
 
         sites: List[Site] = list(Site.objects.all())
         if len(sites) == 0:
@@ -43,14 +43,21 @@ class Command(BaseCommand):
             name = input('Superuser name (e.g. Russel Gong): ')
             superuser.name = name
             superuser.save()
+            self.stdout.write('')
 
-        self.stdout.write('')
+        if Subject.objects.filter(name=Subject.ACTIVITY_SUBJECT).first() is None:
+            self.stdout.write("Creating default subject '{}'..".format(Subject.ACTIVITY_SUBJECT))
+            self.stdout.write('')
+            Subject.objects.create(name=Subject.ACTIVITY_SUBJECT)
+        else:
+            self.stdout.write("Default subject '{}' present in database, skipping..".format(Subject.ACTIVITY_SUBJECT))
+            self.stdout.write('')
+
         start_date = read_date('Earliest start date of program across all sites (e.g. 2017-06-01)')
         end_date = read_date('Latest end date of program across all sites (e.g. 2017-08-01)')
-
         self.stdout.write('')
-        self.stdout.write('Creating days..')
 
+        self.stdout.write('Creating days..')
         days_delta: timedelta = end_date - start_date
         num_days = days_delta.days
         created_days = 0
@@ -67,12 +74,3 @@ class Command(BaseCommand):
         self.stdout.write('')
 
         self.stdout.write('Setup completed successfully!')
-        self.stdout.write('')
-
-        self.stdout.write('If you are making changes to the system on your computer:')
-        self.stdout.write("1. Run 'python manage.py runserver'")
-        self.stdout.write("2. Open 'http://localhost:8000/admin' in your favorite browser")
-        self.stdout.write('')
-
-        self.stdout.write('If you are running this on Heroku:')
-        self.stdout.write("1. You're done! Just open up the site in your browser, and head to the admin interface")
