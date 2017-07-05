@@ -145,6 +145,15 @@ body {
     padding: 10px 0 10px 0;
 }
 
+.movement-button {
+    text-align: center;
+    line-height: 0;
+    margin-top: -5px;
+}
+
+.movement-button a:hover {
+    text-decoration: none;
+}
 
 /* Spinner */
 /* Credit: http://tobiasahlin.com/spinkit/ */
