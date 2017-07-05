@@ -92,6 +92,8 @@ class Day(models.Model):
 # Will not be visible in the admin UI by default
 @total_ordering
 class Week(models.Model):
+    NUM_WEEKS = 5
+
     site = models.ForeignKey(Site)
     week_number = models.IntegerField()
     start_date = models.DateField()

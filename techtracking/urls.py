@@ -20,6 +20,7 @@ import checkout.views
 
 urlpatterns = [
     url(r'^$', checkout.views.index, name='index'),
+    url(r'^week/(?P<week_number>[0-9]+)$', checkout.views.week_schedule, name='week_schedule'),
     url(r'^request/', checkout.views.reserve_request, name='reserve_request'),
     url(r'^reserve/', checkout.views.reserve, name='reserve'),
     url(r'^admin/', admin.site.urls),

@@ -1,7 +1,7 @@
 from typing import List
 from datetime import datetime
 
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseServerError, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -20,10 +20,38 @@ def index(request):
     user: User = request.user
     site: Site = user.site
 
-    # TODO: Do week math
-    # TODO: Show off days grayed out in the UI
     weeks: List[Week] = sorted(list(site.week_set.all()))
-    week: Week = weeks[0]
+    current_week = weeks[0].week_number
+    today = datetime.now().date()
+
+    # TODO: Test this logic
+    for week in weeks:
+        if week.start_date <= today <= week.end_date:
+            current_week = week.week_number
+            break
+        if today <= week.start_date:
+            current_week = week.week_number
+
+    if current_week is None:
+        return HttpResponseServerError("current_week cannot be None")
+
+    return week_schedule(request, current_week)
+
+
+@login_required
+def week_schedule(request, week_number):
+    if not request.user.is_authenticated():
+        return HttpResponseForbidden()
+
+    user: User = request.user
+    site: Site = user.site
+
+    # TODO: Show off days grayed out in the UI
+    # TODO: Make this compound key?
+    try:
+        week: Week = site.week_set.filter(week_number=week_number)[0]
+    except IndexError:
+        return HttpResponseNotFound()
 
     days_in_week: List[Day] = sorted(list(week.days.all()))
 
@@ -34,6 +62,8 @@ def index(request):
     context = {
         "site": site,
         "week": week,
+        "previous_week": None if week.week_number < 2 else (week.week_number - 1),
+        "next_week": None if week.week_number > Week.NUM_WEEKS - 2 else (week.week_number + 1),
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
         "periods": TechnologyAssignment.PERIODS,
         "username": user.email,
@@ -41,7 +71,7 @@ def index(request):
         "week_schedule": week_schedule,
     }
 
-    return render(request, "checkout/index.html", context)
+    return render(request, "checkout/week.html", context)
 
 
 @login_required
