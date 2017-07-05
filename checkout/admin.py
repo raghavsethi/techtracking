@@ -65,7 +65,8 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
         form = super(UserAdmin, self).get_form(request, obj, **kwargs)
         if not request.user.is_superuser:
             form.base_fields['site'].queryset = Site.objects.filter(pk=request.user.site.pk)
-            form.base_fields['is_superuser'].disabled = True
+            if 'is_superuser' in form.base_fields:
+                form.base_fields['is_superuser'].disabled = True
         return form
 
     def activated(self, user: User):
