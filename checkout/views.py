@@ -8,6 +8,7 @@ from django.contrib import messages
 
 from checkout.models import Reservation, Week, Day, Site, User, SiteSku, Team, Classroom
 from checkout.date_schedule import DateSchedule
+from checkout.utils import error_redirect, success_redirect
 
 import logging
 logger = logging.getLogger(__name__)
@@ -172,7 +173,12 @@ def reserve(request):
     team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
 
     period_number = int(request.POST['period'])
-    requested_units = int(request.POST['request_units'])
+
+    try:
+        requested_units = int(request.POST['request_units'])
+    except ValueError:
+        return error_redirect(request, "Requested units must be set to a valid number")
+
     comment = request.POST['comment']
     classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom_pk'])
 
@@ -184,13 +190,11 @@ def reserve(request):
     free_units = site_sku.units - used_units
 
     if requested_units > free_units:
-        messages.error(request, "Cannot reserve {} units of {} in this period, only {} are available".format(
+        return error_redirect(request, "Cannot reserve {} units of {} in this period, only {} are available".format(
             requested_units, site_sku.sku.display_name, free_units))
-        return redirect('index')
 
     if requested_units < 1:
-        messages.error(request, "You must request at least 1 unit of {}".format(site_sku.sku.display_name))
-        return redirect('index')
+        return error_redirect(request, "You must request at least 1 unit of {}".format(site_sku.sku.display_name))
 
     logger.info("[%s] Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
                 request.user.email, team, site_sku, classroom, requested_units, request_date, period_number)
@@ -233,20 +237,22 @@ def reservations(request):
 def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
 
-    if request.user in reservation.team.team.all() or request.user.is_staff:
-        reservation.delete()
-        logger.info("[%s] Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
-                    request.user.email,
-                    reservation.team,
-                    reservation.site_sku,
-                    reservation.classroom,
-                    reservation.units,
-                    reservation.date,
-                    reservation.period)
-        messages.success(request, "Reservation for {} unit(s) of {} was deleted".format(reservation.units,
-                                                                                        reservation.site_sku.sku.display_name))
-    else:
-        messages.error(request, "You must be an administrator or a member of the team that made the reservation to "
-                                "delete it")
+    if not (request.user in reservation.team.team.all() or request.user.is_staff):
+        return error_redirect(request,
+                              "You must be an administrator or a member of the team that made the reservation to "
+                              "delete it")
 
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/reservations'))
+    reservation.delete()
+    logger.info("[%s] Reservation deleted: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
+                request.user.email,
+                reservation.team,
+                reservation.site_sku,
+                reservation.classroom,
+                reservation.units,
+                reservation.date,
+                reservation.period)
+
+    return success_redirect(request,
+                            "Deleted reservation for {} unit(s) of {}".format(reservation.units,
+                                                                              reservation.site_sku.sku.display_name),
+                            "/reservations")
