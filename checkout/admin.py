@@ -44,7 +44,7 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
     list_display = ('name', 'email', 'site', 'is_staff', 'activated')
-    list_filter = ('is_staff', 'site')
+    list_filter = ('is_staff',)
     fieldsets = (
         (None, {'fields': ('email', 'password', 'name', 'site')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'user_permissions')}),
@@ -85,7 +85,6 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
 class ClassroomAdmin(admin.ModelAdmin):
     search_fields = ('code', 'name', 'site__name',)
     list_display = ('code', 'name', 'site')
-    list_filter = ('site',)
 
     def has_module_permission(self, request):
         return request.user.is_staff
@@ -104,7 +103,7 @@ class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__name',)
     list_display = ('date', 'site_sku__sku__display_name', 'classroom__code', 'units', 'team', 'site_sku__site')
-    list_filter = ('site_sku__site', 'date', 'site_sku__sku__display_name')
+    list_filter = ('date', 'site_sku__sku__display_name')
 
     def classroom__code(self, reservation: Reservation):
         return reservation.classroom.code
@@ -131,7 +130,7 @@ class ReservationAdmin(admin.ModelAdmin):
 @admin.register(SiteSku)
 class SiteSkuAdmin(SuperuserOnlyAdmin):
     list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
-    list_filter = ('site', 'sku__display_name')
+    list_filter = ('sku__display_name',)
     readonly_fields = ('site', 'sku', 'units')
 
     def sku__display_name(self, site_sku: SiteSku):
@@ -187,7 +186,7 @@ class TeamAdmin(ImportExportModelAdmin):
 
     search_fields = ('team__name', 'subject')
     list_display = ('team_display', 'subject', 'site')
-    list_filter = ('site', 'subject')
+    list_filter = ('subject',)
 
     def team_display(self, team: Team):
         return ", ".join([member.get_short_name() for member in team.members.all()])
@@ -284,7 +283,6 @@ class WeekAdmin(admin.ModelAdmin):
     form = WeekForm
 
     list_display = ('site_week', 'start_date', 'end_date', 'working_days')
-    list_filter = ('site',)
 
     def working_days(self, week: Week):
         return len(week.days())
