@@ -154,7 +154,6 @@ class ReservationAdmin(admin.ModelAdmin):
 class SiteSkuAdmin(SuperuserOnlyAdmin):
     list_display = ('sku__display_name', 'units_display', 'site', 'storage_location')
     list_filter = ('sku__display_name',)
-    readonly_fields = ('site', 'sku', 'units')
 
     def sku__display_name(self, site_sku: SiteSku):
         return site_sku.sku.display_name
@@ -163,6 +162,14 @@ class SiteSkuAdmin(SuperuserOnlyAdmin):
     def units_display(self, site_sku: SiteSku):
         return site_sku.units
     units_display.short_description = "Assigned Units"
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(SiteSkuAdmin, self).get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            form.base_fields['site'].disabled = True
+            form.base_fields['sku'].disabled = True
+            form.base_fields['units'].disabled = True
+        return form
 
     def get_queryset(self, request):
         qs = super(SiteSkuAdmin, self).get_queryset(request)
