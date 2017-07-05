@@ -123,8 +123,29 @@ def get_available_inventory(site: Site, category: TechnologyCategory, request_da
 
 
 def pick_inventory(available: Dict[SiteInventory, Dict[Period, int]], selected_period: Period) -> SiteInventory:
+    """
+    Heuristic to pick the 'best' available inventory item. The 'best' item is the one most likely to
+    satisfy the current request (keeping in mind that the requester may want to select several periods
+    after the current one), and the one least likely to go 'out of stock' (i.e. the one with most
+    availability) and prevent other users from reserving it.
+    """
 
-    return list(available.keys())[0]
+    best_item: SiteInventory = None
+    best_avg_availability: int = 0
+    for item, item_availability in available.items():
+        availability_sum = 0.0
+        availability_count = 0
+        for period, available_count in item_availability.items():
+            if period >= selected_period:
+                availability_sum += available_count
+                availability_count += 1
+
+        item_avg_availability = availability_sum / availability_count
+        if item_avg_availability > best_avg_availability and available[item][selected_period] > 0:
+            best_avg_availability = item_avg_availability
+            best_item = item
+
+    return best_item
 
 
 def render_reservation_request(request, request_date, selected_period, selected_item, item_inventory, category):
