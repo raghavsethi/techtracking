@@ -20,6 +20,7 @@ def index(request):
     site: Site = user.site
 
     # TODO: Do week math
+    # TODO: Show off days grayed out in the UI
     weeks: List[Week] = sorted(list(site.week_set.all()))
     week: Week = weeks[0]
 

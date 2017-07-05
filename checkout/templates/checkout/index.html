@@ -70,7 +70,7 @@
                 {% for reservation in sku.reservations %}
                 <div class="row">
                     <div class="col-xs-12">
-                        {{ reservation.classroom }} {{ reservation.teachers }}
+                        {{ reservation.classroom.name }} {{ reservation.teachers }}
                     </div>
                 </div>
                 {% endfor %}
