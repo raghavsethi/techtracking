@@ -402,6 +402,6 @@ class TechnologyCategoryAdmin(SuperuserOnlyAdmin, ImportExportModelAdmin):
     list_display = ('name', 'items')
 
     def items(self, category: TechnologyCategory):
-        return ", ".join([item.display_name for item in category.inventoryitem_set.all()])
+        return ", ".join([str(item.units) + " " + item.display_name for item in category.inventoryitem_set.all()])
 
 admin.site.unregister(Group)
