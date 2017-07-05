@@ -38,7 +38,24 @@ def index(request):
             week_number = week.week_number
 
     logger.info("[%s] Resolved current week for %s to be %s", user.email, site, week_number)
-    return week_schedule(request, week_number)
+    week: Week = site.week_set.filter(week_number=week_number).first()
+
+    return render_schedule(request, site, week)
+
+
+@login_required
+def week_schedule(request, week_number):
+    user: User = request.user
+    site: Site = user.site
+
+    week: Week = site.week_set.filter(week_number=week_number).first()
+    if week is None:
+        logger.warning("[%s] Received request for nonexistent week %s at site %s", user.email, week_number, site)
+        return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
+
+    logger.info("[%s] Processing week %s schedule for %s", user.email, week, site)
+
+    return render_schedule(request, site, week)
 
 
 def site_schedule(request, site_id):
@@ -47,7 +64,8 @@ def site_schedule(request, site_id):
 
     if len(weeks) < 1:
         logger.error("[logged-out] No week objects found for site %s", site)
-        return HttpResponseBadRequest("At least one week must be configured for site %s" % site.name)
+        return HttpResponseBadRequest("At least one week must be configured for site %s. Please contact your "
+                                      "administrator" % site.name)
 
     week_number = weeks[0].week_number
     today = datetime.now().date()
@@ -61,68 +79,41 @@ def site_schedule(request, site_id):
             week_number = week.week_number
 
     logger.info("[logged-out] Resolved current week for %s to be %s", site, week_number)
+    week: Week = site.week_set.filter(week_number=week_number).first()
 
-    return site_week_schedule(request, site_id, week_number)
+    return render_schedule(request, site, week)
 
 
-def site_week_schedule(request, site_id, week_number):
+def site_week_schedule(request, site_id, week_number: int):
     site: Site = get_object_or_404(Site, pk=site_id)
 
-    try:
-        week: Week = site.week_set.filter(week_number=week_number)[0]
-    except IndexError:
+    week: Week = site.week_set.filter(week_number=week_number).first()
+    if week is None:
         logger.warning("[logged-out] Received request for nonexistent week %s at site %s", week_number, site)
         return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
 
     logger.info("[logged-out] Processing week %s schedule for %s", week_number, site)
 
+    return render_schedule(request, site, week)
+
+
+def render_schedule(request, site: Site, week: Week):
     days_in_week: List[Day] = sorted(list(week.days.all()))
 
     schedule: List[DateSchedule] = []
     for day in days_in_week:
         schedule.append(DateSchedule(site, day.date))
 
-    context = {
-        "aimhigh_site": site,
-        "week": week,
-        "previous_week": None if week.week_number < 2 else (week.week_number - 1),
-        "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
-        "calendar_days": days_in_week,  # TODO: make this all calendar days in week
-        "periods": sorted(site.period_set.all()),
-        "schedule": schedule,
-    }
-
-    return render(request, "checkout/week.html", context)
-
-
-@login_required
-def week_schedule(request, week_number):
-    user: User = request.user
-    site: Site = user.site
-
-    logger.info("[%s] Processing week %s schedule for %s", user.email, week_number, site)
-
-    # TODO: Show holidays grayed out in the UI
-    try:
-        week: Week = site.week_set.filter(week_number=week_number)[0]
-    except IndexError:
-        logger.warning("[%s] Received request for nonexistent week %s at site %s", user.email, week_number, site)
-        return HttpResponseNotFound("Week %s was not found for %s" % (week_number, site.name))
-
-    days_in_week: List[Day] = sorted(list(week.days.all()))
-
-    schedule: List[DateSchedule] = []
-    for day in days_in_week:
-        schedule.append(DateSchedule(site, day.date))
+    previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
+    next_week: Week = site.week_set.filter(week_number=week.week_number + 1).first()
 
     context = {
         "aimhigh_site": site,
         "week": week,
-        "previous_week": None if week.week_number < 2 else (week.week_number - 1),
-        "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
+        "previous_week": previous_week,
+        "next_week": next_week,
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
         "periods": sorted(site.period_set.all()),
-        "user": user,
         "schedule": schedule,
     }
 

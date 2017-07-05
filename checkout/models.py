@@ -128,30 +128,26 @@ class Week(models.Model):
     class Meta:
         unique_together = (('site', 'week_number'),)
 
-    NUM_WEEKS = 5
-
     site = models.ForeignKey(Site)
     week_number = models.IntegerField()
     days = models.ManyToManyField(Day, blank=True)
 
     def start_date(self):
-        return list(self.days.all())[0].date
+        return sorted(list(self.days.all()))[0].date
 
     def end_date(self):
-        return list(self.days.all())[-1].date
+        return sorted(list(self.days.all()))[-1].date
 
     def __eq__(self, other):
-        return self.site == other.site and \
-               self.days.all()[0] == other.days.all()[0] and \
-               self.days.all()[-1] == other.days.all()[-1]
+        return self.site == other.site and self.week_number == other.week_number
 
     def __lt__(self, other):
-        return list(self.days.all())[0] < list(other.days.all())[0]
+        return self.week_number < other.week_number
 
     def __str__(self):
         days: List[Day] = list(self.days.all())
         return "{} - Week {} ({} days, {} - {})".format(
-            self.site, self.week_number, len(days), days[0], days[-1])
+            self.site, self.week_number, len(days), self.start_date(), self.end_date())
 
 
 class User(AbstractBaseUser, PermissionsMixin):
