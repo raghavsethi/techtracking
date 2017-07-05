@@ -66,7 +66,7 @@ def week_schedule(request, week_number):
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
         "periods": Reservation.PERIODS,
         "user": user,
-        "week_schedule": schedule,
+        "schedule": schedule,
     }
 
     return render(request, "checkout/week.html", context)
