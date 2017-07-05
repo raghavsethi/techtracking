@@ -155,7 +155,8 @@ def reservations(request):
 
     context = {
         "user": user,
-        "reservations": sorted(user_reservations)
+        "reservations": sorted(user_reservations),
+        "period_mapping": Reservation.PERIODS,
     }
 
     return render(request, "checkout/reservations.html", context)

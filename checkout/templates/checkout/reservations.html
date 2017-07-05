@@ -21,7 +21,13 @@
     {% for reservation in reservations %}
       <tr>
         <td>{{ reservation.date|date:"M d, Y - l" }}</td>
-        <td>{{ reservation.period }}</td>
+        <td>
+          {% for period_number, period_name in period_mapping %}
+              {% if period_number == reservation.period %}
+                  {{ period_name }}
+              {% endif %}
+          {% endfor %}
+        </td>
         <td>{{ reservation.team }}</td>
         <td>{{ reservation.site_sku.sku.display_name }} ({{ reservation.site_sku.sku.model_identifier }})</td>
         <td>{{ reservation.units }}</td>
