@@ -63,7 +63,7 @@ def week_schedule(request, week_number):
         "site": site,
         "week": week,
         "previous_week": None if week.week_number < 2 else (week.week_number - 1),
-        "next_week": None if week.week_number > Week.NUM_WEEKS - 2 else (week.week_number + 1),
+        "next_week": None if week.week_number > Week.NUM_WEEKS - 1 else (week.week_number + 1),
         "calendar_days": days_in_week,  # TODO: make this all calendar days in week
         "periods": TechnologyAssignment.PERIODS,
         "username": user.email,
