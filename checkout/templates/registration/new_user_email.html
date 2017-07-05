@@ -1,18 +1,19 @@
 Hey {{ user.get_full_name }}!
-
-Welcome to the Aim High checkout system for technology! Please use your '{{ user.email }}' email
-address to log in.
-
-Click here to create a password to log in to the system:
-{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
-
-To access the system in the future:
-{{ protocol }}://{{ domain }}
-
-If you're having trouble logging in to the system, check out our help center:
-{{ help_link }}
-
-If you don't find what you need there, simply reply to this email, and somebody will get back to you shortly.
-
-Best,
-Aim High technology team
+<p>
+  An account has been created for you in the Aim High <a href="{{ protocol }}://{{ domain }}">checkout system</a> for
+  technology.
+</p>
+<p>
+  Please set a password now by <a
+    href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}">
+  clicking here</a>. Your username is {{ user.email }}
+</p>
+<p>
+  If you're having trouble logging in to the system, check out our <a href="{{ help_link }}">help center</a>. If you
+  don't find what you need there, simply reply to this email, and somebody will get back to you shortly.
+</p>
+<p>
+  Best,
+  <br/>
+  The Aim High technology team
+</p>

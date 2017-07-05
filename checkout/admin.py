@@ -34,7 +34,7 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     def send_welcome_email(self, request, queryset):
         users: List[User] = list(queryset)
         for user in users:
-            user.send_welcome_email()
+            user.send_welcome_email(request)
 
         self.message_user(request, "{} users were sent welcome emails.".format(len(users)))
     send_welcome_email.short_description = 'Send welcome email'

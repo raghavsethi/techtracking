@@ -6,10 +6,12 @@ from typing import List
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMultiAlternatives
-from django.core.validators import MinValueValidator, MinLengthValidator
+from django.core.mail import send_mail
+from django.core.validators import MinValueValidator
 from django.db import models
+from django.http import HttpRequest
 from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -265,23 +267,27 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_perm(self, perm, obj=None):
         return True
 
-    def send_welcome_email(self):
+    def send_welcome_email(self, request: HttpRequest):
         """
         Generates a one-use only link for creating a password and sends to the user's email.
         """
-        from_email = 'raghavsethi.rs@gmail.com'
-        domain = 'aimhigh-checkout.herokuapp.com'
-        use_https = False
-        # TODO: Configure properly
+        from_email = 'checkout.help@aimhigh.org'
+        domain = get_current_site(request)
 
         context = {
             'user': self,
             'domain': domain,
             'uid': urlsafe_base64_encode(force_bytes(self.email)),
             'token': default_token_generator.make_token(self),
-            'protocol': 'https' if use_https else 'http',
+            'protocol': 'https' if request.is_secure() else 'http',
             # TODO: Add help link
         }
 
         body = loader.render_to_string('registration/new_user_email.html', context)
-        EmailMultiAlternatives('Welcome to the Aim High checkout system!', body, from_email, [self.email]).send()
+        send_mail(
+            'Welcome to the Aim High checkout system!',
+            body,
+            from_email,
+            [self.email],
+            fail_silently=False,
+            html_message=body)
