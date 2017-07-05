@@ -1,11 +1,10 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import List
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 
-from checkout.models import Day, Site, User, Subject
+from checkout.models import Site, User, Subject
 
 
 def read_date(prompt: str) -> date:
