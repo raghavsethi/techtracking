@@ -1,10 +1,11 @@
+import csv
 import logging
 from typing import Dict, Tuple
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
-from django.http import HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
 from checkout.models import *
@@ -340,3 +341,38 @@ def delete(request):
                             "Deleted reservation for {} unit(s) of {}".format(reservation.units,
                                                                               reservation.site_sku.sku.display_name),
                             "/reservations")
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def export(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="reservations.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'Site', 'User', 'Teaching Team', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU', 'Purpose'])
+
+    for reservation in Reservation.objects.all():
+        site: Site = reservation.site_sku.site
+
+        weeks: List[Week] = site.week_set.all()
+        week_number = 0
+        for week in weeks:
+            if reservation.date in week.days():
+                week_number = week.week_number
+
+        writer.writerow([
+            site.name,
+            reservation.creator.email,
+            reservation.team.__str__(),
+            reservation.classroom.name,
+            reservation.date,
+            week_number,
+            reservation.period.number,
+            reservation.units,
+            reservation.site_sku.sku.type.name,
+            reservation.site_sku.sku.display_name,
+            reservation.purpose.purpose
+        ])
+
+    return response
