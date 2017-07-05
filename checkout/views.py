@@ -4,7 +4,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from checkout.models import TechnologyAssignment, Week, Day
+from checkout.models import TechnologyAssignment, Week, Day, Site, User
 from checkout.date_schedule import DateSchedule
 
 
@@ -16,16 +16,16 @@ def index(request):
     if not request.user.is_authenticated():
         return HttpResponseForbidden()
 
-    user = request.user
-    site = user.site
+    user: User = request.user
+    site: Site = user.site
 
     # TODO: Do week math
-    weeks: List[Week] = list(site.week_set.all())
+    weeks: List[Week] = sorted(list(site.week_set.all()))
     week: Week = weeks[0]
 
-    # TODO: Figure out sorting
+    days_in_week: List[Day] = sorted(list(week.days.all()))
+
     week_schedule: List[DateSchedule] = []
-    days_in_week: List[Day] = list(week.days.all())
     for day in days_in_week:
         week_schedule.append(DateSchedule(site, day.date))
 
