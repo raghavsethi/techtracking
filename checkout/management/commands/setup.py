@@ -16,52 +16,60 @@ class Command(BaseCommand):
     help = 'Runs the setup process for the checkout application'
 
     def handle(self, *args, **options):
+        setup_actions_performed: bool = False
         superusers: List[User] = list(get_user_model().objects.filter(is_superuser=True))
         if len(superusers) == 0:
             self.stderr.write("No superusers found, please run 'python manage.py createsuperuser'")
             exit(1)
 
         if len(superusers) >= 1:
-            self.stdout.write('Superusers are present in the database, moving right along..')
-            self.stdout.write('')
+            self.stdout.write('✔ Superusers are present in the database')
 
         sites: List[Site] = list(Site.objects.all())
         if len(sites) == 0:
-            self.stdout.write('No sites present in database')
+            self.stdout.write('! No sites present in database')
             site_name = input('Enter the name of any one site (e.g. Western Addition): ')
             sites = [Site.objects.create(name=site_name)]
+            self.stdout.write('✔ Site created')
+            setup_actions_performed = True
 
         if len(sites) >= 1:
-            self.stdout.write('Sites are present in the database, moving right along..')
-            self.stdout.write('')
+            self.stdout.write('✔ Sites are present in the database')
 
         for superuser in superusers:
             if superuser.name is None or superuser.name == '':
-                name = input('Enter full name for superuser with email {}: '.format(superuser.email))
+                self.stdout.write('! Superuser {} does not have a name'.format(superuser.email))
+                name = input('Enter full name for {}: '.format(superuser.email))
                 superuser.name = name
                 superuser.save()
-                self.stdout.write('')
+                setup_actions_performed = True
+                self.stdout.write('✔ Superuser name saved')
 
             if superuser.site is None:
-                self.stdout.write("Setting site for {} to '{}'..".format(superuser.name, sites[0].name))
-                self.stdout.write('')
+                self.stdout.write('! Superuser {} does not have an associated initial site'.format(superuser.name))
                 superuser.site = sites[0]
                 superuser.save()
+                self.stdout.write("✔ Set initial site for {} to '{}'..".format(superuser.name, sites[0].name))
+                setup_actions_performed = True
 
         if Subject.objects.filter(name=Subject.ACTIVITY_SUBJECT).first() is None:
-            self.stdout.write("Creating default subject '{}'..".format(Subject.ACTIVITY_SUBJECT))
-            self.stdout.write('')
+            self.stdout.write('! Default subject was not present in the database')
             Subject.objects.create(name=Subject.ACTIVITY_SUBJECT)
+            self.stdout.write("✔ Created default subject '{}'..".format(Subject.ACTIVITY_SUBJECT))
+            setup_actions_performed = True
         else:
-            self.stdout.write("Default subject '{}' present in database, moving right along..".format(Subject.ACTIVITY_SUBJECT))
-            self.stdout.write('')
+            self.stdout.write("✔ Default subject '{}' present in database".format(Subject.ACTIVITY_SUBJECT))
 
         if UsagePurpose.objects.filter(purpose=UsagePurpose.OTHER_PURPOSE).first() is None:
-            self.stdout.write("Creating default purpose '{}'..".format(UsagePurpose.OTHER_PURPOSE))
-            self.stdout.write('')
+            self.stdout.write('! Default purpose was not present in the database')
             UsagePurpose.objects.create(purpose=UsagePurpose.OTHER_PURPOSE)
+            self.stdout.write("✔ Created default purpose '{}'..".format(UsagePurpose.OTHER_PURPOSE))
+            setup_actions_performed = True
         else:
-            self.stdout.write("Default purpose '{}' present in database, moving right along..".format(UsagePurpose.OTHER_PURPOSE))
-            self.stdout.write('')
+            self.stdout.write("✔ Default purpose '{}' present in database.".format(UsagePurpose.OTHER_PURPOSE))
 
-        self.stdout.write('Setup completed successfully!')
+        self.stdout.write('')
+        if setup_actions_performed:
+            self.stdout.write('✔ Setup completed successfully!')
+        else:
+            self.stdout.write('✔ Setup checks passed. No actions were taken.')
