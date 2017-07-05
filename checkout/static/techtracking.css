@@ -15,6 +15,16 @@
     float: left;
 }
 
+.form-horizontal .form-control-static {
+    padding-top: 0;
+}
+
+@media (min-width: 768px) {
+    .form-horizontal .form-control-static {
+        padding-top: 7px;
+    }
+}
+
 /* Custom classes */
 
 .body {

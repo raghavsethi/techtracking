@@ -15,41 +15,41 @@
           <div class="col-xs-12">
             <form class="form-horizontal">
             <div class="form-group">
-              <label class="col-xs-3 control-label">Item Type</label>
-              <div class="col-xs-9">
+              <label class="col-xs-5 control-label">Item Type</label>
+              <div class="col-xs-7">
                 <p class="form-control-static">{{ reservation.site_sku.sku.display_name }}
                   ({{ reservation.site_sku.sku.model_identifier }})</p>
               </div>
             </div>
             <div class="form-group">
-              <label class="col-xs-3 control-label">Time</label>
-              <div class="col-xs-9">
+              <label class="col-xs-5 control-label">Time</label>
+              <div class="col-xs-7">
                 <p class="form-control-static">{{ reservation.date|date:"D, M d" }} - {{ period.1 }}</p>
               </div>
             </div>
             <div class="form-group">
-              <label class="col-xs-3 control-label">Reserved Units</label>
-              <div class="col-xs-9">
+              <label class="col-xs-5 control-label">Reserved Units</label>
+              <div class="col-xs-7">
                 <p class="form-control-static">{{ reservation.units }}</p>
               </div>
             </div>
             <div class="form-group">
-              <label class="col-xs-3 control-label">Teaching Team</label>
-              <div class="col-xs-9">
+              <label class="col-xs-5 control-label">Teaching Team</label>
+              <div class="col-xs-7">
                 <p class="form-control-static">{{ reservation.team }}</p>
               </div>
             </div>
             <div class="form-group">
               <label
-                  class="col-xs-3 control-label">Classroom</label>
-              <div class="col-xs-9">
+                  class="col-xs-5 control-label">Classroom</label>
+              <div class="col-xs-7">
                 <p class="form-control-static">{{ reservation.classroom.name }}</p>
               </div>
             </div>
             <div class="form-group">
               <label
-                  class="col-xs-3 control-label">Comment</label>
-              <div class="col-xs-9">
+                  class="col-xs-5 control-label">Comment</label>
+              <div class="col-xs-7">
                 <p class="form-control-static">
                   {% if reservation.comment %}
                     {{ reservation.comment }}
