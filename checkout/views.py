@@ -145,7 +145,7 @@ def reserve_request(request):
     if len(teams) == 0:
         logger.warning("[%s] User is not part of any teams, creating new team..", user.email)
         new_team: Team = Team.objects.create(site=site_sku.site)
-        new_team.team = [user]
+        new_team.members = [user]
         new_team.save()
         teams = [new_team]
 
@@ -267,7 +267,7 @@ def reservations(request):
 def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
 
-    if not (request.user in reservation.team.team.all() or request.user.is_staff):
+    if not (request.user in reservation.team.members.all() or request.user.is_staff):
         return error_redirect(request,
                               "You must be an administrator or a member of the team that made the reservation to "
                               "delete it")

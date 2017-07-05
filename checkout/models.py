@@ -65,11 +65,14 @@ class Subject(models.Model):
 
 class Team(models.Model):
     site = models.ForeignKey(Site)
-    team = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL)
     subject = models.ForeignKey(Subject, blank=True)
 
     def __str__(self):
-        return ", ".join([member.get_short_name() for member in self.team.all()]) + " (" + self.subject.__str__() + ")"
+        if self.id == None:
+            return "In-progress teaching team"
+
+        return ", ".join([member.get_short_name() for member in self.members.all()]) + " (" + self.subject.__str__() + ")"
 
 
 @total_ordering

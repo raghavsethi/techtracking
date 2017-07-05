@@ -3,7 +3,9 @@ from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from import_export.admin import ImportExportModelAdmin
 
+from checkout.bulk_imports import TeamResource
 from checkout.models import *
 
 
@@ -171,13 +173,15 @@ class SkuAdmin(admin.ModelAdmin):
     assigned_units_display.short_description = "Assigned Units"
 
 
-class TeamAdmin(admin.ModelAdmin):
-    search_fields = ('team__display_name',)
-    list_display = ('team_display', 'site')
-    list_filter = ('site',)
+class TeamAdmin(ImportExportModelAdmin):
+    resource_class = TeamResource
+
+    search_fields = ('team__display_name', 'subject')
+    list_display = ('team_display', 'subject', 'site')
+    list_filter = ('site', 'subject')
 
     def team_display(self, team: Team):
-        return team.__str__()
+        return ", ".join([member.get_short_name() for member in team.members.all()])
     team_display.short_description = "Team"
 
     def get_queryset(self, request):
