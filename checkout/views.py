@@ -161,7 +161,7 @@ def reserve(request):
     site_sku: SiteSku = get_object_or_404(SiteSku, pk=request.POST['site_assignment_pk'])
     team: Team = get_object_or_404(Team, pk=request.POST['team_pk'])
     purpose: UsagePurpose = get_object_or_404(UsagePurpose, pk=request.POST['purpose_pk'])
-    collaborative: bool = request.POST['collaborative'] == "on"
+    collaborative: bool = 'collaborative' in request.POST
 
     selected_periods = []
     for period in sorted(Period.objects.all()):
