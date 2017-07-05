@@ -133,6 +133,9 @@ class UserResource(resources.ModelResource):
             if row['is_staff'] != 1:
                 row['is_staff'] = 0
 
+            if row['is_staff'] == 0 and row['email'] == user.email:
+                raise ValueError("Cannot remove staff member status for yourself via import, use edit view instead")
+
             if row['site'] != user.site.name:
                 raise ValueError("Cannot import users for site '{}', only '{}'".format(row['site'], user.site))
 
