@@ -3,7 +3,7 @@ from typing import List
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
-from checkout.models import Team, Subject, User, Site
+from checkout.models import Team, Subject, User, Site, SKU, SKUType
 
 
 class TeamResource(resources.ModelResource):
@@ -97,3 +97,14 @@ class UserResource(resources.ModelResource):
     def after_save_instance(self, user: User, using_transactions, dry_run):
         if not dry_run and not user.has_usable_password():
                 user.send_welcome_email()
+
+
+class SKUResource(resources.ModelResource):
+    class Meta:
+        model = SKU
+        fields = ('id', 'type', 'model_identifier', 'display_name', 'units')
+
+    type = fields.Field(
+        column_name='type',
+        attribute='type',
+        widget=ForeignKeyWidget(SKUType, 'name'))

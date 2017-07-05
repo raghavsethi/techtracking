@@ -10,7 +10,7 @@ from django.forms.utils import ErrorList
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats import base_formats
 
-from checkout.bulk_imports import TeamResource, UserResource
+from checkout.bulk_imports import TeamResource, UserResource, SKUResource
 from checkout.models import *
 
 
@@ -194,6 +194,8 @@ class SiteSkuAdmin(admin.ModelAdmin):
 
 @admin.register(SKU)
 class SkuAdmin(ImportExportModelAdmin):
+    resource_class = SKUResource
+
     list_display = ('display_name', 'model_identifier', 'total_units_display', 'assigned_units_display')
 
     def total_units_display(self, sku: SKU):
@@ -400,6 +402,12 @@ class PeriodAdmin(admin.ModelAdmin):
 
 @admin.register(UsagePurpose)
 class UsagePurposeAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+
+@admin.register(SKUType)
+class SKUTypeAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return request.user.is_superuser
 

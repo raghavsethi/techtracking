@@ -18,7 +18,15 @@ from django.utils.translation import ugettext_lazy as _
 from checkout.user_manager import CheckoutUserManager
 
 
+class SKUType(models.Model):
+    name = models.CharField(max_length=50, help_text='e.g. Laptop, Tablet, Projector')
+
+    def __str__(self):
+        return self.name
+
+
 class SKU(models.Model):
+    type = models.ForeignKey(SKUType)
     model_identifier = models.CharField(
         max_length=200,
         help_text='e.g. Apple 13.3" MacBook Pro (Mid 2017, Space Gray)')
