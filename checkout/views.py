@@ -169,6 +169,7 @@ def reserve(request):
 
     period_number = int(request.POST['period'])
     requested_units = int(request.POST['request_units'])
+    comment = request.POST['comment']
     classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom_pk'])
 
     existing_reservations: List[Reservation] = list(Reservation.objects.filter(
@@ -191,7 +192,7 @@ def reserve(request):
                 request.user.email, team, site_sku, classroom, requested_units, request_date, period_number)
 
     Reservation.objects.create(
-        team=team, site_sku=site_sku, classroom=classroom, units=requested_units, date=request_date, period=period_number)
+        team=team, site_sku=site_sku, classroom=classroom, units=requested_units, date=request_date, period=period_number, comment=comment)
 
     messages.success(request, "Reservation confirmed for {} unit(s) of {}".format(requested_units, site_sku.sku.display_name))
 

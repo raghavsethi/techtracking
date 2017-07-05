@@ -69,6 +69,7 @@ class Reservation(models.Model):
     classroom = models.ForeignKey(Classroom)
     units = models.IntegerField()
     date = models.DateField()
+    comment = models.CharField(max_length=1000)
 
     PERIODS = (
         (1, 'Period 1'),

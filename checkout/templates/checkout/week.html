@@ -92,7 +92,7 @@
                                 {% for sku in period_details.skus %}
                                   {% for reservation in sku.reservations %}
                                     <div class="row reservation" data-toggle="tooltip" data-placement="bottom"
-                                         title="{{ reservation.units }} units reserved by {{ reservation.team }} for location {{ reservation.classroom.name }}">
+                                         title="{{ reservation.units }} units reserved by {{ reservation.team }} for location {{ reservation.classroom.name }}{% if reservation.comment %}. Comment: '{{ reservation.comment }}' {% endif %}">
                                       <div class="col-xs-12">
                                         <div class="row">
                                           <div class="col-xs-12 sku-reservation">
