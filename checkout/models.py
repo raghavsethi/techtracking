@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
@@ -121,7 +122,8 @@ class Week(models.Model):
         return self.start_date < other.start_date
 
     def __str__(self):
-        return "{} - Week {} ({} - {})".format(self.site, self.week_number, self.start_date, self.end_date)
+        return "{} - Week {} ({} days, {} - {})".format(
+            self.site, self.week_number, len(self.days.all()), self.start_date, self.end_date)
 
 
 @receiver(post_save, sender=Week, dispatch_uid="create_default_days")
@@ -129,13 +131,12 @@ def update_stock(sender, instance: Week, **kwargs):
     if len(instance.days.all()) == 0:
         days_delta: timedelta = instance.end_date - instance.start_date
         num_days = days_delta.days
-        days = []
         for day_number in range(0, num_days + 1):
             date = instance.start_date + timedelta(days=day_number)
-            days.append(Day.objects.create(date=date))
-
-        instance.days = days
-        instance.save()
+            try:
+                Day.objects.get(date=date)
+            except ObjectDoesNotExist:
+                Day.objects.create(date=date)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
