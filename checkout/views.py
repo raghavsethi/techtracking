@@ -125,8 +125,12 @@ def reserve(request):
     free_units = site_sku.units - used_units
 
     if requested_units > free_units:
-        messages.error(request, "Cannot reserve more than the available units of {} in this period ({})".format(
-            site_sku.sku.display_name, free_units))
+        messages.error(request, "Cannot reserve {} units of {} in this period, only {} are available".format(
+            requested_units, site_sku.sku.display_name, free_units))
+        return redirect('index')
+
+    if requested_units < 1:
+        messages.error(request, "You must request at least 1 unit of {}".format(site_sku.sku.display_name))
         return redirect('index')
 
     logger.info("%s: Creating new reservation: Team: %s, SKU: %s, Classroom: %s, Units: %s, Date: %s, Period %s",
