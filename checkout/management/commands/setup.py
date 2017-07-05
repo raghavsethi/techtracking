@@ -4,8 +4,7 @@ from typing import List
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from checkout.models import Site, User, Subject, UsagePurpose
-
+from checkout.models import Site, User, Subject, UsagePurpose, Period
 
 def read_date(prompt: str) -> date:
     date_str: str = input(prompt + ": ")
@@ -67,6 +66,24 @@ class Command(BaseCommand):
             setup_actions_performed = True
         else:
             self.stdout.write("✔ Default purpose '{}' present in database.".format(UsagePurpose.OTHER_PURPOSE))
+
+        periods: List[Period] = list(Period.objects.all())
+        if len(periods) == 0:
+            self.stdout.write('! Periods not present in database')
+            self.stdout.write('Enter the period names (e.g. Period 1, Activity 2) in order now. Hit enter after each '
+                              'period. Hit enter on a blank line to stop and move to the next step:')
+
+            period_number: int = 1
+            period_name: str = input().strip()
+            while period_name != '':
+                Period.objects.create(number=period_number, name=period_name)
+                print("Added '{}' to database".format(period_name))
+                period_number += 1
+                period_name = input().strip()
+
+            self.stdout.write("✔ Added {} periods to database".format(period_number - 1))
+        else:
+            self.stdout.write("✔ {} Periods present in database".format(len(periods)))
 
         self.stdout.write('')
         if setup_actions_performed:
