@@ -317,7 +317,7 @@ class WeekForm(forms.ModelForm):
 
 # noinspection PyMethodMayBeStatic
 @admin.register(Week)
-class WeekAdmin(admin.ModelAdmin):
+class WeekAdmin(SuperuserOnlyAdmin):
     form = WeekForm
 
     list_display = ('site_week', 'start_date', 'end_date', 'working_days')
