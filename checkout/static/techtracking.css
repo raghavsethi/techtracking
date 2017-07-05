@@ -16,6 +16,20 @@
     margin-top: 40px;
 }
 
+.user-info {
+    padding: 3px 20px;
+    white-space:nowrap;
+}
+
+.user-info-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #959595;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    content: "Example";
+}
+
 .reservation {
     line-height: 1;
     white-space: nowrap;
