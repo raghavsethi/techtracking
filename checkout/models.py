@@ -37,12 +37,12 @@ class InventoryItem(models.Model):
     type = models.ForeignKey(TechnologyCategory)
     model_identifier = models.CharField(
         max_length=200,
-        help_text='e.g. Apple 13.3" MacBook Pro (Mid 2017, Space Gray)')
+        help_text='e.g. Apple 13.3" MacBook Pro Mid 2017')
     display_name = models.CharField(
         max_length=50,
         help_text='Short name to show in schedule - e.g. MacbookPro13-2017')
     units = models.IntegerField(
-        help_text='How many total functional units Aim High has available',
+        help_text='Total functional units Aim High has available',
         validators=[MinValueValidator(1)])
 
     def __str__(self):
@@ -64,7 +64,7 @@ class SiteInventory(models.Model):
         verbose_name_plural = 'Site Inventory'
         unique_together = (('site', 'inventory'),)
 
-    site = models.ForeignKey(Site, help_text='Which site these units are being assigned to')
+    site = models.ForeignKey(Site, help_text='Site these units are assigned to')
     inventory = models.ForeignKey(InventoryItem)
     storage_location = models.CharField(
         max_length=100,
@@ -101,7 +101,7 @@ class Classroom(models.Model):
         help_text='e.g. Classroom 101, Cafeteria')
     code = models.CharField(
         max_length=3,
-        help_text='Up to 3 letters to identify classroom in schedule - e.g. 101, CAF')
+        help_text='Up to 3 letters that identify classroom in the schedule view - e.g. 101, CAF')
 
     def __str__(self):
         return "{} - {}".format(self.code, self.name, self.site)
@@ -123,7 +123,7 @@ class Team(models.Model):
 
     def __str__(self):
         if self.id is None:
-            return "In-construction teaching team"
+            return "Unsaved teaching team"
 
         return ", ".join([member.name for member in self.members.all()]) + " (" + self.subject.__str__() + ")"
 
@@ -185,7 +185,6 @@ class Reservation(models.Model):
             self.period, self.classroom.name, self.team, self.units, self.site_inventory.inventory.display_name)
 
 
-# Will not be visible in the admin UI by default
 @total_ordering
 class Week(models.Model):
     class Meta:
