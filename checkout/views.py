@@ -31,10 +31,10 @@ def index(request):
 
     # TODO: Test this logic
     for week in weeks:
-        if week.start_date <= today <= week.end_date:
+        if week.start_date() <= today <= week.end_date():
             week_number = week.week_number
             break
-        if today <= week.start_date:
+        if today <= week.start_date():
             week_number = week.week_number
 
     logger.info("[%s] Resolved current week for %s to be %s", user.email, site, week_number)
@@ -54,10 +54,10 @@ def site_schedule(request, site_id):
 
     # TODO: Test this logic
     for week in weeks:
-        if week.start_date <= today <= week.end_date:
+        if week.start_date() <= today <= week.end_date():
             week_number = week.week_number
             break
-        if today <= week.start_date:
+        if today <= week.start_date():
             week_number = week.week_number
 
     logger.info("[logged-out] Resolved current week for %s to be %s", site, week_number)
@@ -236,7 +236,7 @@ def reserve(request):
     # Figure out which week this was in
     weeks: List[Week] = sorted(list(request.user.site.week_set.all()))
     for week in weeks:
-        if week.start_date <= request_date <= week.end_date:
+        if week.start_date() <= request_date <= week.end_date():
             return redirect('week_schedule', week.week_number)
 
     return redirect('index')

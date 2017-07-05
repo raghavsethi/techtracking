@@ -1,4 +1,5 @@
 from functools import total_ordering
+from typing import List
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
@@ -123,19 +124,26 @@ class Week(models.Model):
 
     site = models.ForeignKey(Site)
     week_number = models.IntegerField()
-    start_date = models.DateField()
-    end_date = models.DateField()
     days = models.ManyToManyField(Day, blank=True)
 
+    def start_date(self):
+        return list(self.days.all())[0].date
+
+    def end_date(self):
+        return list(self.days.all())[-1].date
+
     def __eq__(self, other):
-        return self.site == other.site and self.start_date == other.start_date and self.end_date == other.end_date
+        return self.site == other.site and \
+               self.days.all()[0] == other.days.all()[0] and \
+               self.days.all()[-1] == other.days.all()[-1]
 
     def __lt__(self, other):
-        return self.start_date < other.start_date
+        return list(self.days.all())[0] < list(other.days.all())[0]
 
     def __str__(self):
+        days: List[Day] = list(self.days.all())
         return "{} - Week {} ({} days, {} - {})".format(
-            self.site, self.week_number, len(self.days.all()), self.start_date, self.end_date)
+            self.site, self.week_number, len(days), days[0], days[-1])
 
 
 class User(AbstractBaseUser, PermissionsMixin):
