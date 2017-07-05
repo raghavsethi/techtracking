@@ -355,7 +355,8 @@ def export(request):
 
     writer = csv.writer(response)
     writer.writerow([
-        'Site', 'User', 'Teaching Team', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU', 'Purpose'])
+        'Site', 'User', 'Teaching Team', 'Subject', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU',
+        'Purpose'])
 
     for reservation in Reservation.objects.all():
         site: Site = reservation.site_sku.site
@@ -369,7 +370,8 @@ def export(request):
         writer.writerow([
             site.name,
             reservation.creator.email,
-            reservation.team.__str__(),
+            ", ".join([member.name for member in reservation.team.members.all()]),
+            reservation.team.subject,
             reservation.classroom.name,
             reservation.date,
             week_number,
