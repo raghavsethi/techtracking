@@ -33,6 +33,7 @@
 ```commandline
     source venv/bin/activate
 ```
+* [Install Postgres](https://devcenter.heroku.com/articles/heroku-postgresql#local-setup)
 * Install libraries
 ```commandline
     pip install -r requirements.txt
