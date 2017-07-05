@@ -354,7 +354,7 @@ def export(request):
     writer = csv.writer(response)
     writer.writerow([
         'Site', 'User', 'Teaching Team', 'Subject', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU',
-        'Purpose'])
+        'Purpose', 'Collaborative'])
 
     for reservation in Reservation.objects.all():
         site: Site = reservation.site_sku.site
@@ -377,7 +377,8 @@ def export(request):
             reservation.units,
             reservation.site_sku.sku.type.name,
             reservation.site_sku.sku.display_name,
-            reservation.purpose.purpose
+            reservation.purpose.purpose,
+            1 if reservation.collaborative else 0
         ])
 
     return response
