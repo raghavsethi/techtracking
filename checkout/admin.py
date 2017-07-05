@@ -357,6 +357,12 @@ class SiteAdmin(admin.ModelAdmin):
             ["{} ({})".format(site_sku.sku.display_name, site_sku.units) for site_sku in site.sitesku_set.all()])
 
 
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+
 @admin.register(Period)
 class PeriodAdmin(admin.ModelAdmin):
     list_display = ('name', 'number', 'site')
