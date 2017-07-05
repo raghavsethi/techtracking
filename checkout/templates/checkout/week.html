@@ -73,11 +73,17 @@
                                     {% for sku in period_details.skus %}
                                       <div class="row reservation">
                                         <div class="col-xs-12 sku-reservation">
-                                          <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.0 }}">
-                                            <span class="label label-success sku-room">Free</span>
+                                          {% if sku.free_count > 0 %}
+                                            <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.0 }}">
+                                              <span class="label label-success sku-room">Free</span>
+                                              <span class="label label-default sku-units">{{ sku.free_count }}</span>
+                                              <small>{{ sku.site_sku.sku.display_name }}</small>
+                                            </a>
+                                          {% else %}
+                                            <span class="label label-danger sku-room">N/A</span>
                                             <span class="label label-default sku-units">{{ sku.free_count }}</span>
                                             <small>{{ sku.site_sku.sku.display_name }}</small>
-                                          </a>
+                                          {% endif %}
                                         </div>
                                       </div>
                                     {% endfor %}
