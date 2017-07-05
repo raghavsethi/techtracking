@@ -10,16 +10,16 @@ from checkout.user_manager import CheckoutUserManager
 
 
 class SKU(models.Model):
-    model_identifier = models.CharField(max_length=200)
-    display_name = models.CharField(max_length=50)
-    units = models.IntegerField()
+    model_identifier = models.CharField(max_length=200, help_text='e.g. Apple 13.3" MacBook Pro (Mid 2017, Space Gray)')
+    display_name = models.CharField(max_length=50, help_text='Short name to show in schedule - e.g. MacbookPro13-2017')
+    units = models.IntegerField(help_text='How many total functional units Aim High has available')
 
     def __str__(self):
         return "{} ({}) - {} units" .format(self.display_name, self.model_identifier, self.units)
 
 
 class Site(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, help_text='e.g. Francisco, Western Addition')
 
     def __str__(self):
         return self.name
@@ -29,12 +29,16 @@ class SiteSku(models.Model):
     class Meta:
         unique_together = (('site', 'sku'),)
 
-    site = models.ForeignKey(Site)
+    site = models.ForeignKey(Site, help_text='Which site these units are being assigned to')
     sku = models.ForeignKey(SKU)
-    storage_location = models.CharField(max_length=100, null=True, blank=True)
+    storage_location = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="e.g. Closet in site directors's office")
 
     # TODO: add constraints here to make sure the sum cannot exceed total_units
-    units = models.IntegerField()
+    units = models.IntegerField(help_text='Number of units being assigned to this site')
 
     def __str__(self):
         return "{} - {} ({} units)".format(self.site, self.sku.display_name, self.units)
@@ -45,8 +49,8 @@ class Classroom(models.Model):
         unique_together = (('site', 'code'), ('site', 'name'))
 
     site = models.ForeignKey(Site)
-    name = models.CharField(max_length=50)
-    code = models.CharField(max_length=3)
+    name = models.CharField(max_length=50, help_text='e.g. Classroom 101, Cafeteria')
+    code = models.CharField(max_length=3, help_text='3 letter code to identify classroom in schedule - e.g. 101, CAF')
 
     def __str__(self):
         return "{} - {}".format(self.code, self.name, self.site)
@@ -62,9 +66,11 @@ class Team(models.Model):
 
 @total_ordering
 class Period(models.Model):
-    number = models.IntegerField()
-    name = models.CharField(max_length=12)
     site = models.ForeignKey(Site)
+    number = models.IntegerField(help_text='Determines the ordering of periods in a day. For example, if Period 4 is '
+                                           'given number 4, and Activity 1 is given number 5, then Period 4 occurs '
+                                           'right before Activity 1')
+    name = models.CharField(max_length=12, help_text='e.g. Period 3, Activity 2')
 
     def __eq__(self, other):
         return self.name == other.name and self.number == other.number
@@ -130,7 +136,7 @@ class Week(models.Model):
 
     site = models.ForeignKey(Site)
     week_number = models.IntegerField()
-    days = models.ManyToManyField(Day, blank=True)
+    days = models.ManyToManyField(Day, blank=True, help_text="Working days in this week")
 
     def start_date(self):
         return sorted(list(self.days.all()))[0].date
@@ -156,7 +162,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     site = models.ForeignKey(Site, null=True)
     email = models.EmailField(unique=True, primary_key=True)
-    display_name = models.CharField(max_length=50)
+    display_name = models.CharField(max_length=50, help_text='Short name to display in schedule - e.g. KyraG')
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
