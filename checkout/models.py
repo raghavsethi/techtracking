@@ -4,7 +4,9 @@ from typing import List
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import MinValueValidator, MinLengthValidator
 from django.db import models
 from django.template import loader
 from django.utils.encoding import force_bytes
@@ -15,16 +17,25 @@ from checkout.user_manager import CheckoutUserManager
 
 
 class SKU(models.Model):
-    model_identifier = models.CharField(max_length=200, help_text='e.g. Apple 13.3" MacBook Pro (Mid 2017, Space Gray)')
-    display_name = models.CharField(max_length=50, help_text='Short name to show in schedule - e.g. MacbookPro13-2017')
-    units = models.IntegerField(help_text='How many total functional units Aim High has available')
+    model_identifier = models.CharField(
+        max_length=200,
+        help_text='e.g. Apple 13.3" MacBook Pro (Mid 2017, Space Gray)')
+    display_name = models.CharField(
+        max_length=50,
+        help_text='Short name to show in schedule - e.g. MacbookPro13-2017')
+    units = models.IntegerField(
+        help_text='How many total functional units Aim High has available',
+        validators=[MinValueValidator(1)])
 
     def __str__(self):
         return "{} ({}) - {} units" .format(self.display_name, self.model_identifier, self.units)
 
 
 class Site(models.Model):
-    name = models.CharField(max_length=100, help_text='e.g. Francisco, Western Addition')
+    name = models.CharField(
+        primary_key=True,
+        max_length=100,
+        help_text='e.g. Francisco, Western Addition')
 
     def __str__(self):
         return self.name
@@ -39,11 +50,21 @@ class SiteSku(models.Model):
     storage_location = models.CharField(
         max_length=100,
         null=True,
-        blank=True,
-        help_text="e.g. Closet in site directors's office")
+        default="Site Director's office",
+        help_text="e.g. Storage closet in classroom 201")
 
-    # TODO: add constraints here to make sure the sum cannot exceed total_units
     units = models.IntegerField(help_text='Number of units being assigned to this site')
+
+    def clean(self):
+        super(SiteSku, self).clean()
+        assigned_units = 0
+        for site_sku in self.site.sitesku_set.all():
+            if site_sku.site != self.site:
+                assigned_units += site_sku.units
+
+        if (self.units + assigned_units) > self.sku.units:
+            raise ValidationError(
+                'Cannot assign more units ({}) than available ({})'.format(self.units + assigned_units, self.sku.units))
 
     def __str__(self):
         return "{} - {} ({} units)".format(self.site, self.sku.display_name, self.units)
@@ -54,8 +75,12 @@ class Classroom(models.Model):
         unique_together = (('site', 'code'), ('site', 'name'))
 
     site = models.ForeignKey(Site)
-    name = models.CharField(max_length=50, help_text='e.g. Classroom 101, Cafeteria')
-    code = models.CharField(max_length=3, help_text='3 letter code to identify classroom in schedule - e.g. 101, CAF')
+    name = models.CharField(
+        max_length=50,
+        help_text='e.g. Classroom 101, Cafeteria')
+    code = models.CharField(
+        max_length=3,
+        help_text='Up to 3 letters to identify classroom in schedule - e.g. 101, CAF')
 
     def __str__(self):
         return "{} - {}".format(self.code, self.name, self.site)
@@ -73,13 +98,13 @@ class Subject(models.Model):
 class Team(models.Model):
     site = models.ForeignKey(Site)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    subject = models.ForeignKey(Subject, blank=True)
+    subject = models.ForeignKey(Subject)
 
     def __str__(self):
-        if self.id == None:
-            return "In-progress teaching team"
+        if self.id is None:
+            return "In-construction teaching team"
 
-        return ", ".join([member.get_short_name() for member in self.members.all()]) + " (" + self.subject.__str__() + ")"
+        return ", ".join([member.name for member in self.members.all()]) + " (" + self.subject.__str__() + ")"
 
 
 @total_ordering
@@ -104,12 +129,15 @@ class Period(models.Model):
 
 @total_ordering
 class Reservation(models.Model):
+    class Meta:
+        unique_together = (('team', 'site_sku', 'classroom', 'date', 'period'),)
+
     team = models.ForeignKey(Team)
     site_sku = models.ForeignKey(SiteSku)
     classroom = models.ForeignKey(Classroom)
-    units = models.IntegerField()
     date = models.DateField()
     period = models.ForeignKey(Period)
+    units = models.IntegerField()
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
     def __eq__(self, other):
@@ -128,7 +156,7 @@ class Reservation(models.Model):
             return self.units < other.units
 
     def __str__(self):
-        return "{} Class {} {} - {} {}".format(
+        return "{} {} {} - {} {}".format(
             self.period, self.classroom.name, self.team, self.units, self.site_sku.sku.display_name)
 
 
