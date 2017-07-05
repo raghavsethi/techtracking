@@ -2,7 +2,7 @@ from typing import List
 from datetime import datetime
 
 from django.http import HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
 from checkout.models import TechnologyAssignment, Week, Day, Site, User, SiteAssignment, TeachingTeam, Classroom
@@ -85,4 +85,4 @@ def reserve(request):
     assignment = TechnologyAssignment(site=site_assignment.site, teachers=team, technology=site_assignment, classroom=classroom, units=units, date=request_date, period=period_number)
     assignment.save()
 
-    return index(request)
+    return redirect('index')
