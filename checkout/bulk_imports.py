@@ -152,3 +152,9 @@ class SKUResource(resources.ModelResource):
         column_name='type',
         attribute='type',
         widget=ForeignKeyWidget(SKUType, 'name'))
+
+
+class SKUTypeResource(resources.ModelResource):
+    class Meta:
+        model = SKUType
+        fields = ('name',)

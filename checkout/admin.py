@@ -7,7 +7,7 @@ from django.forms.utils import ErrorList
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats import base_formats
 
-from checkout.bulk_imports import TeamResource, UserResource, SKUResource
+from checkout.bulk_imports import TeamResource, UserResource, SKUResource, SKUTypeResource
 from checkout.models import *
 
 
@@ -391,7 +391,7 @@ class UsagePurposeAdmin(SuperuserOnlyAdmin):
 
 
 @admin.register(SKUType)
-class SKUTypeAdmin(SuperuserOnlyAdmin):
-    pass
+class SKUTypeAdmin(SuperuserOnlyAdmin, ImportExportModelAdmin):
+    resource_class = SKUTypeResource
 
 admin.site.unregister(Group)
