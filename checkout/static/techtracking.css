@@ -17,6 +17,7 @@
 
 .form-horizontal .form-control-static {
     padding-top: 0;
+    white-space: normal;
 }
 
 @media (min-width: 768px) {
@@ -47,7 +48,6 @@
 
 .reservation {
     line-height: 1;
-    white-space: nowrap;
     vertical-align: baseline;
     border-radius: 0.25em;
     background-color: #dddddd;
@@ -79,6 +79,12 @@
     display: block;
     min-height: 80px;
     width: 100%;
+    min-width: 180px;
+}
+
+.table-cell-period {
+    text-align: center;
+    width: 120px;
 }
 
 .table-cell-today {
