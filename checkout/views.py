@@ -112,10 +112,10 @@ def site_week_schedule(request, site_id, week_number: int):
 
 
 def render_schedule(request, site: Site, week: Week):
-    days_in_week = sorted(list(week.days()))
+    working_days = sorted(list(week.days()))
 
     schedule: List[ReservationSchedule] = []
-    for day in days_in_week:
+    for day in working_days:
         schedule.append(ReservationSchedule(site, day))
 
     previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
@@ -126,7 +126,7 @@ def render_schedule(request, site: Site, week: Week):
         "week": week,
         "previous_week": previous_week,
         "next_week": next_week,
-        "calendar_days": days_in_week,  # TODO: make this all calendar days in week
+        "calendar_days": week.calendar_days(),
         "periods": sorted(Period.objects.all()),
         "schedule": schedule,
     }
@@ -297,9 +297,9 @@ def movements(request):
                                       "administrator." % site.name)
 
     schedule: List[MovementSchedule] = []
-    days_in_week = sorted(list(week.days()))
+    working_days = sorted(list(week.days()))
 
-    for day in days_in_week:
+    for day in working_days:
         schedule.append(MovementSchedule(site, day))
 
     previous_week: Week = site.week_set.filter(week_number=week.week_number - 1).first()
@@ -310,7 +310,7 @@ def movements(request):
         "week": week,
         "previous_week": previous_week,
         "next_week": next_week,
-        "calendar_days": days_in_week,  # TODO: make this all calendar days in week
+        "calendar_days": week.calendar_days(),
         "periods": sorted(Period.objects.all()),
         "schedule": schedule,
     }

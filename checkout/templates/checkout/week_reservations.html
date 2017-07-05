@@ -1,7 +1,7 @@
 {% extends "checkout/week.html" %}
 {% block title %} Schedule {% endblock %}
 {% block cell %}
-  <div class="reserve">
+  <div class="reserve-button-container">
     <div class="btn-group btn-group-justified">
       <a role="button" class="btn btn-default btn-sm reserve-button" data-toggle="collapse"
          href="#period_details_{{ work_day.date.isoformat }}_{{ period.id }}">
@@ -16,19 +16,23 @@
         <div class="row">
           <div class="col-xs-12">
             {% for sku in period_details.skus %}
-              <div class="row reservation">
-                <div class="col-xs-12 sku-reservation">
-                  {% if sku.free_count > 0 %}
+              <div class="row">
+                <div class="col-xs-12">
+                  <div class="pill-container pill-available">
                     <a href="/request/?site_assignment={{ sku.site_sku.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
-                      <span class="label label-success sku-room">Free</span>
-                      <span class="label label-default sku-units">{{ sku.free_count }}</span>
-                      <small>{{ sku.site_sku.sku.display_name }}</small>
+                      <div class="pill">
+                        {% if sku.free_count > 0 %}
+                          <span class="label label-success sku-room">Free</span>
+                          <span class="label label-default sku-units">{{ sku.free_count }}</span>
+                          <small>{{ sku.site_sku.sku.display_name }}</small>
+                        {% else %}
+                          <span class="label label-danger sku-room">N/A</span>
+                          <span class="label label-default sku-units">{{ sku.free_count }}</span>
+                          <small>{{ sku.site_sku.sku.display_name }}</small>
+                        {% endif %}
+                      </div>
                     </a>
-                  {% else %}
-                    <span class="label label-danger sku-room">N/A</span>
-                    <span class="label label-default sku-units">{{ sku.free_count }}</span>
-                    <small>{{ sku.site_sku.sku.display_name }}</small>
-                  {% endif %}
+                  </div>
                 </div>
               </div>
             {% endfor %}
@@ -36,31 +40,31 @@
         </div>
       </div>
     </div>
+    <hr class="hr-smallmargin"/>
   </div> <!-- /availability -->
   <div class="reservations">
     <div class="row">
       <div class="col-xs-12">
         {% for sku in period_details.skus %}
           {% for reservation in sku.reservations %}
-            <div class="row reservation">
-              <a role="button" data-toggle="modal"
-                 data-target="#reservation_{{ reservation.pk }}">
-                <div class="col-xs-12">
-                  <div class="row">
-                    <div class="col-xs-12 sku-reservation">
-                        <span
-                            class="label label-info sku-room">{{ reservation.classroom.code }}</span>
+            <div class="row">
+              <div class="col-xs-12">
+                <div class="pill-container pill-reserved">
+                  <a role="button" data-toggle="modal" data-target="#reservation_{{ reservation.pk }}">
+                    <div class="pill">
+                      <span class="label label-info sku-room">{{ reservation.classroom.code }}</span>
                       <span class="label label-default sku-units">{{ reservation.units }}</span>
                       <small>{{ reservation.site_sku.sku.display_name }}</small>
                     </div>
-                  </div>
-              </a>
-              {% include "checkout/popover_modal.html" %}
-              {% include "checkout/delete_modal.html" %}
+                  </a>
+                </div>
+              </div>
             </div>
-            </div>
+            {% include "checkout/popover_modal.html" %}
+            {% include "checkout/delete_modal.html" %}
           {% endfor %}
         {% endfor %}
+      </div>
     </div>
   </div> <!-- /reservations -->
 {% endblock %}

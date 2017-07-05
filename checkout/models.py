@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from functools import total_ordering
 from typing import List
 
@@ -198,6 +198,16 @@ class Week(models.Model):
     def days(self) -> List[date]:
         date_strs: List[str] = json.loads(self.pickled_days)
         return [datetime.strptime(date_str, '%Y-%m-%d').date() for date_str in date_strs]
+
+    def calendar_days(self) -> List[date]:
+        i: date = self.start_date()
+        end_date = self.end_date()
+        calendar_days = []
+        while i <= end_date:
+            calendar_days.append(i)
+            i = i + timedelta(days=1)
+
+        return calendar_days
 
     def __eq__(self, other):
         return self.site == other.site and self.week_number == other.week_number

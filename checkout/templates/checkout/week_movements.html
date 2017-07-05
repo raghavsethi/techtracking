@@ -2,8 +2,8 @@
 {% block title %} Movements {% endblock %}
 {% block cell %}
   {% for movement in period_details.movements %}
-    <div class="row reservation">
-      <div class="col-xs-12 sku-reservation">
+    <div class="row pill-container">
+      <div class="col-xs-12 pill">
         <span class="label label-default sku-units">{{ movement.units }}</span>
         <small>{{ movement.site_sku.sku.display_name }}</small>
         <hr style="margin-top:5px; margin-bottom: 5px"/>

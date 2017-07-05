@@ -35,10 +35,10 @@
       {% endif %}
     </div>
   </div>
-  <hr style="margin-top: 10px"/>
+  <hr class="hr-smallmargin"/>
   {% if schedule %}
     <div class="table-responsive">
-      <table class="table table-bordered table-hover">
+      <table class="table table-bordered table-hover schedule">
         <thead>
         <tr>
           <th></th>
@@ -57,19 +57,19 @@
               {{ period.name }}
             </th>
             {% for calendar_day in calendar_days %}
-              {% for work_day in schedule %}
-                {% if work_day.date == calendar_day %}
-                  {% for period_details in work_day.periods %}
-                    {% if period_details.period == period %}
-                      <td class="{% if calendar_day.isoformat == today %}table-cell-today{% endif %}">
-                        <div class="table-cell">
+              <td class="table-td">
+                {% for work_day in schedule %}
+                  {% if work_day.date == calendar_day %}
+                    {% for period_details in work_day.periods %}
+                      {% if period_details.period == period %}
+                        <div class="table-cell {% if calendar_day.isoformat == today %}table-cell-today{% endif %}">
                           {% block cell %}{% endblock %}
                         </div>
-                      </td>
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-              {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              </td>
             {% endfor %}
           </tr>
         {% endfor %}

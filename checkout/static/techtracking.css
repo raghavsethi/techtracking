@@ -42,6 +42,10 @@
     margin-top: 75px;
 }
 
+.hr-smallmargin {
+    margin: 5px 0 5px 0;
+}
+
 .user-info {
     padding: 3px 20px;
     white-space:nowrap;
@@ -56,21 +60,27 @@
     content: "Example";
 }
 
-.reservation {
+.pill-container {
     line-height: 1;
     vertical-align: baseline;
-    border-radius: 0.25em;
-    background-color: #dddddd;
-    margin: 0 0 5px 0;
     color: #000;
+    margin: 0 5px 5px 5px;
 }
 
-.reservation a:hover {
+.pill-available {
+    background-color: #e6efe3;
+}
+
+.pill-reserved {
+    background-color: #f1f1f1;
+}
+
+.pill-container a:hover {
     text-decoration: none;
 }
 
-.reserve {
-    margin: -9px -9px 5px -9px;
+.reserve-button-container {
+    margin: -1px 0 5px 0;
 }
 
 .reserve-button {
@@ -81,7 +91,7 @@
     opacity: 1;
 }
 
-.sku-reservation {
+.pill {
     padding: 4px 5px 5px 5px;
     max-width: 180px;
     white-space: nowrap;
@@ -99,6 +109,11 @@
 .table-cell-period {
     text-align: center;
     width: 120px;
+}
+
+.schedule > tbody > tr > td {
+    padding: 0;
+    margin: 0;
 }
 
 .table-cell-today {
