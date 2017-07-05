@@ -157,6 +157,7 @@ class Reservation(models.Model):
     period = models.ForeignKey(Period)
     units = models.IntegerField(validators=[MinValueValidator(1)])
     purpose = models.ForeignKey(UsagePurpose, null=True, blank=True)
+    collaborative = models.BooleanField()
     creator = models.ForeignKey(settings.AUTH_USER_MODEL)
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
