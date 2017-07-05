@@ -1,11 +1,41 @@
 from typing import List
 
+from django.utils.encoding import smart_text
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 
 from checkout.models import Team, Subject, User, Site, SKU, SKUType
 
 SITE_PSEUDO_COLUMN = 'resolved_site'
+
+
+def get_members_from_names(names: List[str], site: Site):
+    members = []
+    for member_name in names:
+        member = site.user_set.filter(name__icontains=member_name.strip()).first()
+
+        if member is None:
+            raise ValueError("{} not found in list of users at {}. Please enter one of: {}".format(
+                member_name,
+                site.name,
+                ", ".join(["'" + user.get_full_name() + "'" for user in site.user_set.all()])))
+
+        members.append(member)
+
+    return members
+
+
+class MembersManyToManyWidget(ManyToManyWidget):
+    def clean(self, value, row=None, *args, **kwargs):
+        if not value:
+            return self.model.objects.none()
+        names = value.split(self.separator)
+        names = filter(None, [i.strip() for i in names])
+        return get_members_from_names(list(names), row[SITE_PSEUDO_COLUMN])
+
+    def render(self, value, obj=None):
+        ids = [smart_text(getattr(obj, self.field)) for obj in value.all()]
+        return ", ".join(ids)
 
 
 class TeamResource(resources.ModelResource):
@@ -17,7 +47,7 @@ class TeamResource(resources.ModelResource):
     members = fields.Field(
         column_name='members',
         attribute='members',
-        widget=ManyToManyWidget(User, ',', 'name'))
+        widget=MembersManyToManyWidget(User, ',', 'name'))
 
     class Meta:
         model = Team
@@ -37,15 +67,7 @@ class TeamResource(resources.ModelResource):
         return team_qs.first()
 
     def init_instance(self, row=None):
-        subject = self.get_subject(row)
-        members = self.get_members(row)
-
-        team: Team = Team.objects.create(subject=subject, site=row[SITE_PSEUDO_COLUMN])
-        for member in members:
-            team.members.add(member)
-
-        team.save()
-        return team
+        return Team(site=row[SITE_PSEUDO_COLUMN])
 
     @staticmethod
     def get_members(row) -> List[User]:
@@ -64,19 +86,7 @@ class TeamResource(resources.ModelResource):
 
         member_names: List[str] = members_str.split(",")
 
-        members = []
-        for member_name in member_names:
-            member = row[SITE_PSEUDO_COLUMN].user_set.filter(name__icontains=member_name.strip()).first()
-
-            if member is None:
-                raise ValueError("{} not found in list of users at {}. Please enter one of: {}".format(
-                    member_name,
-                    row[SITE_PSEUDO_COLUMN].name,
-                    ", ".join(["'" + user.get_full_name() + "'" for user in row[SITE_PSEUDO_COLUMN].user_set.all()])))
-
-            members.append(member)
-
-        return members
+        return get_members_from_names(member_names, row[SITE_PSEUDO_COLUMN])
 
     @staticmethod
     def get_subject(row) -> Subject:
