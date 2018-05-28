@@ -123,14 +123,30 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     deactivate
 ```
 
-## Running the server or making changes
+## Making changes
+
+### Using PyCharm
+* PyCharm is a great IDE for Python and is highly recommended. Download
+  the community edition from [JetBrains](https://www.jetbrains.com/pycharm/)
+* Install it, and run it to begin setup. Choose settings as appropriate
+* When you are at the welcome screen, select 'Open', find the 'techtracking' folder and select it
+* Click 'Open'
+* On the top bar, next to the green triangular run button, make sure the `runserver` configuration is selected
+* Click the run button
+* Open up `http://localhost:8000` in your favorite browser
+* You can now play around with the app
+* Make changes by editing files in the 'checkout' directory
+* Any changes you save will trigger a re-run. Just hit reload in your web browser.
+
+### Using the Terminal
 * Activate the virtualenv
 ```commandline
     source venv/bin/activate
 ```
-* Export secret key (for email delivery, you'll need to set up `SENDGRID_API_KEY` also)
+* Export secret key (for email delivery, you'll need to put in the correct `SENDGRID_API_KEY`)
 ```commandline
     export SECRET_KEY=foo
+    export SENDGRID_API_KEY=foo
 ```
 * Run the local server
 ```commandline
@@ -138,7 +154,7 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```
 * Open up `http://localhost:8000` in your favorite browser
 * You can now play around with the app
-* Make changes by editing files using your favorite text editor, or use PyCharm (instructions below)
+* Make changes by editing files using your favorite text editor
 * Any changes you save to your working directory will automatically be reflected
   in the web browser. Just hit reload.
 * When you're done:
@@ -146,15 +162,10 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     deactivate
 ```
 
-## Using PyCharm
-* PyCharm is a great IDE for Python and is highly recommended. Download
-  the community edition from [JetBrains](https://www.jetbrains.com/pycharm/)
-* Install it, and run it to begin setup. Choose settings as appropriate
-* When you are at the welcome screen, select 'Open', find the 'techtracking folder' and select it
-* Click 'Open'
-* Most of the relevant Python code is under the 'checkout' directory
+## Updating your repository
 
-## Updating your repository to match latest upstream
+If there are changes in the master (upstream) version that you want to integrate
+into your code, you can rebase your code onto the latest version
 ```commandline
     git pull --rebase upstream master
 ```
