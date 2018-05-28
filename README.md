@@ -11,7 +11,7 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     brew -v
 ```
-* If you do not see a version number, install Homebrew: [link](https://brew.sh/)
+* If you do not see a version number, [install Homebrew](https://brew.sh/):
 * Check if you have git installed
 ```commandline
     git --version
@@ -21,7 +21,7 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     brew install git
 ```
 
-### Python 3.6 and virtualenv
+### Python 3 and virtualenv
 * Check what version of Python you have installed
 ```commandline
     python --version
@@ -53,15 +53,15 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 
 ### Clone the repository
 
-* [Fork this repository](https://bitbucket.org/ycoreaimhigh/techtracking/fork). This will create a copy of the source
-  code on BitBucket.
+* Fork this repository (on GitHub this button is on the top right). This will create a copy of the source
+  code in your GitHub account.
 * Clone your copy of the repository into a folder of your choice (replace <username> with your username)
 ```commandline
-    git clone https://<username>@bitbucket.org/<username>/techtracking.git
+    git clone https://github.com/<your-github-username>/techtracking.git
 ```
 * Create a remote pointing to the upstream copy of the repository
 ```commandline
-    git remote add upstream git@bitbucket.org:ycoreaimhigh/techtracking.git
+    git remote add upstream https://github.com/raghavsethi/techtracking.git
 ```
 * Change into this directory
 ```commandline
@@ -133,6 +133,11 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     deactivate
 ```
 
+## Editing the code
+* PyCharm is a great IDE for Python and is highly recommended. Download
+  the community edition from [JetBrains](https://www.jetbrains.com/pycharm/).
+
+
 ## Updating your repository to match latest upstream
 ```commandline
     git pull --rebase upstream master
@@ -147,7 +152,7 @@ This means you have made changes to the code. If you want to save your changes:
     git add --all .
     git commit -am "<description of changes>"
 ```
-If you do not want to save your changes:
+If you do *not* want to save your changes:
 ```commandline
     git reset --hard HEAD
 ```
