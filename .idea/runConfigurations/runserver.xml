@@ -5,6 +5,8 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="SECRET_KEY" value="foo" />
+      <env name="SENDGRID_API_KEY" value="foo" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/venv/bin/python" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
