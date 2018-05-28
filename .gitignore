@@ -1,4 +1,5 @@
-.idea
+.idea/*
+!.idea/runConfigurations/
 venv
 *.pyc
 staticfiles

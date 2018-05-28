@@ -11,7 +11,7 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     brew -v
 ```
-* If you do not see a version number, [install Homebrew](https://brew.sh/):
+* If you do not see a version number, [install Homebrew](https://brew.sh/).
 * Check if you have git installed
 ```commandline
     git --version
@@ -42,7 +42,7 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```commandline
     pip --version
 ```
-* If the command prints out a line that ends in `(python 2.7)`, run
+* If the command was not found or prints out a line that ends in `(python 2.7)`, run
 ```commandline
     pip3 install virtualenv
 ```
@@ -55,6 +55,10 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 
 * Fork this repository (on GitHub this button is on the top right). This will create a copy of the source
   code in your GitHub account.
+* Change to the directory you want to download the code into
+```commandline
+    cd <directory>
+```
 * Clone your copy of the repository into a folder of your choice (replace <username> with your username)
 ```commandline
     git clone https://github.com/<your-github-username>/techtracking.git
@@ -73,8 +77,12 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ```
 
 ### Install libraries, Postgres, set up database
-* [Install Postgres](http://postgresapp.com/)
-* Run the newly installed Postgres.app, and click the initialize button
+* Install Postgres ([Postgres.app](http://postgresapp.com/) is recommended)
+* Configure Postgres (or if you're using Postgres.app, run it and click the initialize button)
+* Add Postgres to PATH
+```commandline
+    export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin
+```
 * Activate the virtualenv
 ```commandline
     source venv/bin/activate
@@ -99,6 +107,10 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 * Run the setup script
 ```commandline
     python manage.py setup
+```
+* Set up static files
+```commandline
+    python manage.py collectstatic
 ```
 * Run the local server
 ```commandline
@@ -125,7 +137,8 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     python manage.py runserver
 ```
 * Open up `http://localhost:8000` in your favorite browser
-* Play around with the app and make changes
+* You can now play around with the app
+* Make changes by editing files using your favorite text editor, or use PyCharm (instructions below)
 * Any changes you save to your working directory will automatically be reflected
   in the web browser. Just hit reload.
 * When you're done:
@@ -133,10 +146,13 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
     deactivate
 ```
 
-## Editing the code
+## Using PyCharm
 * PyCharm is a great IDE for Python and is highly recommended. Download
-  the community edition from [JetBrains](https://www.jetbrains.com/pycharm/).
-
+  the community edition from [JetBrains](https://www.jetbrains.com/pycharm/)
+* Install it, and run it to begin setup. Choose settings as appropriate
+* When you are at the welcome screen, select 'Open', find the 'techtracking folder' and select it
+* Click 'Open'
+* Most of the relevant Python code is under the 'checkout' directory
 
 ## Updating your repository to match latest upstream
 ```commandline
