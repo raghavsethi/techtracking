@@ -9,46 +9,46 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 * Open a terminal (Terminal.app, if you don't have another one you prefer)
 * Check if you have homebrew installed
 ```commandline
-    brew -v
+brew -v
 ```
 * If you do not see a version number, [install Homebrew](https://brew.sh/).
 * Check if you have git installed
 ```commandline
-    git --version
+git --version
 ```
 * If it is unavailable, install it
 ```commandline
-    brew install git
+brew install git
 ```
 
 ### Python 3 and virtualenv
 * Check what version of Python you have installed
 ```commandline
-    python --version
+python --version
 ```
 * If the version is newer than 3.6, great! Skip to the next section. If the version is 2.x, you should try
 ```commandline
-    python3 --version
+python3 --version
 ```
 * If `python3` was not found, run:
 ```commandline
-    brew install python3
+brew install python3
 ```
 * If `python3` was found, but the version was older than 3.6:
 ```commandline
-    brew upgrade python3
+brew upgrade python3
 ```
 * Check what version of `pip` you have:
 ```commandline
-    pip --version
+pip --version
 ```
 * If the command was not found or prints out a line that ends in `(python 2.7)`, run
 ```commandline
-    pip3 install virtualenv
+pip3 install virtualenv
 ```
 * If, instead, the command had printed out a line that ended in `(python 3.)`, run
 ```commandline
-    pip install virtualenv
+pip install virtualenv
 ```
 
 ### Clone the repository
@@ -57,23 +57,23 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
   code in your GitHub account.
 * Change to the directory you want to download the code into
 ```commandline
-    cd <directory>
+cd <directory>
 ```
 * Clone your copy of the repository into a folder of your choice (replace <username> with your username)
 ```commandline
-    git clone https://github.com/<your-github-username>/techtracking.git
+git clone https://github.com/<your-github-username>/techtracking.git
 ```
 * Create a remote pointing to the upstream copy of the repository
 ```commandline
-    git remote add upstream https://github.com/raghavsethi/techtracking.git
+git remote add upstream https://github.com/raghavsethi/techtracking.git
 ```
 * Change into this directory
 ```commandline
-    cd techtracking
+cd techtracking
 ```
 * Set up a virtualenv
 ```commandline
-    virtualenv venv
+virtualenv venv
 ```
 
 ### Install libraries, Postgres, set up database
@@ -81,46 +81,46 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 * Configure Postgres (or if you're using Postgres.app, run it and click the initialize button)
 * Add Postgres to PATH
 ```commandline
-    export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin
+export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin
 ```
 * Activate the virtualenv
 ```commandline
-    source venv/bin/activate
+source venv/bin/activate
 ```
 * Export secret key
 ```commandline
-    export SECRET_KEY=foo
+export SECRET_KEY=foo
 ```
 * Install the required libraries
 ```commandline
-    pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 * Set up the local database
 ```commandline
-    python manage.py makemigrations
-    python manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
 ```
 * Create a superuser
 ```commandline
-    python manage.py createsuperuser
+python manage.py createsuperuser
 ```
 * Run the setup script
 ```commandline
-    python manage.py setup
+python manage.py setup
 ```
 * Set up static files
 ```commandline
-    python manage.py collectstatic
+python manage.py collectstatic
 ```
 * Run the local server
 ```commandline
-    python manage.py runserver
+python manage.py runserver
 ```
 * Open up the admin interface `http://localhost:8000/admin`
 * Create the minimum required entries in the database (weeks, SKUs etc.)
 * Exit the virtualenv (when you're done)
 ```commandline
-    deactivate
+deactivate
 ```
 
 ## Making changes
@@ -141,16 +141,16 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 ### Using the Terminal
 * Activate the virtualenv
 ```commandline
-    source venv/bin/activate
+source venv/bin/activate
 ```
 * Export secret key (for email delivery, you'll need to put in the correct `SENDGRID_API_KEY`)
 ```commandline
-    export SECRET_KEY=foo
-    export SENDGRID_API_KEY=foo
+export SECRET_KEY=foo
+export SENDGRID_API_KEY=foo
 ```
 * Run the local server
 ```commandline
-    python manage.py runserver
+python manage.py runserver
 ```
 * Open up `http://localhost:8000` in your favorite browser
 * You can now play around with the app
@@ -159,7 +159,7 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
   in the web browser. Just hit reload.
 * When you're done:
 ```commandline
-    deactivate
+deactivate
 ```
 
 ## Updating your repository
@@ -167,20 +167,20 @@ Atlassian has a [great tutorial](https://www.atlassian.com/git/tutorials/learn-g
 If there are changes in the master (upstream) version that you want to integrate
 into your code, you can rebase your code onto the latest version
 ```commandline
-    git pull --rebase upstream master
+git pull --rebase upstream master
 ```
 If you see this message:
 ```commandline
-    error: cannot pull with rebase: You have unstaged changes.
-    error: please commit or stash them.
+error: cannot pull with rebase: You have unstaged changes.
+error: please commit or stash them.
 ```
 This means you have made changes to the code. If you want to save your changes:
 ```commandline
-    git add --all .
-    git commit -am "<description of changes>"
+git add --all .
+git commit -am "<description of changes>"
 ```
 If you do *not* want to save your changes:
 ```commandline
-    git reset --hard HEAD
+git reset --hard HEAD
 ```
 Now you can try rebasing again
