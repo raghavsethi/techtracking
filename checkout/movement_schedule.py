@@ -41,11 +41,14 @@ def order_candidates(reservation: Reservation, units_by_location: Dict[Classroom
 
 def get_movement_periods() -> List[Period]:
     movement_periods = []
+    last_normal_period_number = 0
     for period in sorted(list(Period.objects.all())):
         period.name = "Before " + period.name
         movement_periods.append(period)
+        if period.number > last_normal_period_number:
+            last_normal_period_number = period.number
 
-    movement_periods.append(Period(pk=0, number=len(movement_periods), name="Cleanup"))
+    movement_periods.append(Period(pk=0, number=last_normal_period_number + 1, name="Cleanup"))
     return movement_periods
 
 
