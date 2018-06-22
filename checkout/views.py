@@ -113,7 +113,7 @@ def get_available_inventory(site: Site, category: TechnologyCategory, request_da
         Dict[SiteInventory, Dict[Period, int]]:
 
     reservations: List[Reservation] = list(Reservation.objects.filter(
-        site_inventory__inventory__type=category, date=request_date))
+        site_inventory__inventory__type=category, site_inventory__site=site, date=request_date))
     category_inventory: List[SiteInventory] = list(site.siteinventory_set.filter(inventory__type=category))
 
     free_units: Dict[SiteInventory, Dict[Period, int]] = {}
