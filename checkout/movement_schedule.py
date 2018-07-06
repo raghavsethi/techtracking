@@ -1,9 +1,12 @@
+import logging
+
 from collections import defaultdict, OrderedDict
 from typing import Dict
 
 from checkout.models import *
 
 DEFAULT_STORAGE_LOCATION = "Site Director's Office"
+logger = logging.getLogger(__name__)
 
 
 class Movement:
@@ -81,7 +84,12 @@ class MovementSchedule:
                     remaining_units = reservation.units
                     while remaining_units > 0:
                         candidates = order_candidates(reservation, units_by_location)
-                        assert len(candidates) > 0
+                        if len(candidates) <= 0:
+                            # Some reservations cannot be serviced (site inventory has reduced)
+                            logger.warning("Cannot satisfy reservation %s (units required: %s, available: %s)",
+                                           reservation, remaining_units, units_by_location)
+                            break
+
                         for origin, available_count in candidates:
                             moved_units = min(remaining_units, available_count)
 
