@@ -1,9 +1,11 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin.helpers import AdminForm
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 from django.forms.utils import ErrorList
+from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats import base_formats
 
@@ -37,6 +39,7 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
             user.send_welcome_email(request)
 
         self.message_user(request, "{} users were sent welcome emails.".format(len(users)))
+
     send_welcome_email.short_description = 'Send welcome email'
 
     actions = [send_welcome_email]
@@ -71,6 +74,7 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
 
     def activated(self, user: User):
         return user.has_usable_password()
+
     activated.boolean = True
 
     def has_module_permission(self, request):
@@ -118,7 +122,8 @@ class ReservationAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ('team__team__name',)
     list_display = (
-        'date', 'site_inventory__inventory__display_name', 'period', 'classroom__code', 'units', 'team', 'site_inventory__site')
+        'date', 'site_inventory__inventory__display_name', 'period', 'classroom__code', 'units', 'team',
+        'site_inventory__site')
     list_filter = ('date', 'site_inventory__inventory__display_name')
 
     def classroom__code(self, reservation: Reservation):
@@ -126,10 +131,12 @@ class ReservationAdmin(admin.ModelAdmin):
 
     def site_inventory__site(self, reservation: Reservation):
         return reservation.site_inventory.site
+
     site_inventory__site.short_description = "Site"
 
     def site_inventory__inventory__display_name(self, reservation: Reservation):
         return reservation.site_inventory.inventory.display_name
+
     site_inventory__inventory__display_name.short_description = "Item Name"
 
     def get_form(self, request, obj=None, **kwargs):
@@ -153,40 +160,92 @@ class ReservationAdmin(admin.ModelAdmin):
 
 
 @admin.register(SiteInventory)
-class SiteInventoryName(SuperuserOnlyAdmin):
+class SiteInventoryAdmin(SuperuserOnlyAdmin):
     list_display = ('inventory__display_name', 'inventory__type__name', 'units_display', 'site', 'storage_location')
     list_filter = ('inventory__type__name', 'inventory__display_name')
 
+    class SiteInventoryAdminForm(forms.ModelForm):
+        class Meta:
+            model = SiteInventory
+            fields = '__all__'
+
+        def clean_units(self):
+            if self.current_user and self.initial_units and (not self.current_user.is_superuser) and \
+                    self.cleaned_data['units'] > self.initial_units:
+                raise ValidationError("Only administrators can increase units of site inventory")
+
+            return self.cleaned_data['units']
+
     def inventory__display_name(self, site_inventory: SiteInventory):
         return site_inventory.inventory.display_name
+
     inventory__display_name.short_description = "Item Name"
 
     def inventory__type__name(self, site_inventory: SiteInventory):
         return site_inventory.inventory.type.name
+
     inventory__type__name.short_description = "Category"
 
     def units_display(self, site_inventory: SiteInventory):
         return site_inventory.units
+
     units_display.short_description = "Assigned Units"
 
     def get_form(self, request, obj=None, **kwargs):
-        form = super(SiteInventoryName, self).get_form(request, obj, **kwargs)
+        form = SiteInventoryAdmin.SiteInventoryAdminForm
+        form.base_fields['units'].help_text = "Units assigned to this site."
+
         if not request.user.is_superuser:
             form.base_fields['site'].disabled = True
             form.base_fields['inventory'].disabled = True
-            form.base_fields['units'].disabled = True
+            form.base_fields['units'].help_text += "<br>Decrease this number if units break or become inoperable. " \
+                                                   "The administrator will increase this number if units are replaced."
+
+        form.base_fields['units'].help_text += "<br><strong style=\"color: red\">" \
+                                               "Warning: Reducing assigned units could result in reservations that " \
+                                               "receive fewer units that requested." \
+                                               "</strong> "
+        form.base_fields['units'].help_text = mark_safe(form.base_fields['units'].help_text)
+
+        form.initial_units = None
+        if obj and obj.pk:
+            initial = SiteInventory.objects.get(pk=obj.pk)
+            form.initial_units = initial.units
+        form.current_user = request.user
+
         return form
 
+    def save_model(self, request, obj, form, change):
+        if change and obj and obj.pk:
+            pre_change: SiteInventory = SiteInventory.objects.get(pk=obj.pk)
+            post_change: SiteInventory = obj
+            if post_change.units < pre_change.units:
+                affected = Reservation.objects.filter(site_inventory=pre_change,
+                                                      date__gte=datetime.today().date(),
+                                                      units__gt=post_change.units)
+                reservation_format_string = '<a href="/admin/checkout/reservation/{}">Reservation {}</a>'
+                affected_links = [reservation_format_string.format(x.pk, idx + 1) for idx, x in enumerate(affected)]
+                count = len(affected)
+                if count > 0:
+                    self.message_user(request,
+                                      mark_safe("The following {} reservation(s) will receive fewer units than "
+                                                "requested: {}".format(count, ", ".join(affected_links))),
+                                      level=messages.WARNING)
+
+            super().save_model(request, obj, form, change)
+
     def get_queryset(self, request):
-        qs = super(SiteInventoryName, self).get_queryset(request)
+        qs = super(SiteInventoryAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
 
         return qs.filter(site=request.user.site)
 
+    # This is what enables staff to see the site inventory, change storage location and reduce available units
     def has_module_permission(self, request):
         return request.user.is_staff
 
+    # This is what enables staff to see the site inventory, change storage location and reduce available units
     def has_change_permission(self, request, obj=None):
         return request.user.is_staff
 
@@ -199,6 +258,7 @@ class InventoryItemAdmin(ImportExportModelAdmin, SuperuserOnlyAdmin):
 
     def total_units_display(self, inventory: InventoryItem):
         return inventory.units
+
     total_units_display.short_description = "Total Units"
 
     def assigned_units_display(self, inventory: InventoryItem):
@@ -207,6 +267,7 @@ class InventoryItemAdmin(ImportExportModelAdmin, SuperuserOnlyAdmin):
             assigned_units += site_inventory.units
 
         return assigned_units
+
     assigned_units_display.short_description = "Assigned Units"
 
     def get_export_formats(self):
@@ -226,6 +287,7 @@ class TeamAdmin(ImportExportModelAdmin):
 
     def team_display(self, team: Team):
         return ", ".join([member.get_short_name() for member in team.members.all()])
+
     team_display.short_description = "Team"
 
     def has_module_permission(self, request):
@@ -259,7 +321,7 @@ class WeekForm(forms.ModelForm):
 
     def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=None,
-                 empty_permitted=False, instance: Week=None, use_required_attribute=None):
+                 empty_permitted=False, instance: Week = None, use_required_attribute=None):
         super(WeekForm, self).__init__(
             data=data,
             files=files,
@@ -377,7 +439,8 @@ class SiteAdmin(SuperuserOnlyAdmin):
 
     def allocated(self, site: Site):
         return ", ".join(
-            ["{} ({})".format(site_inventory.inventory.display_name, site_inventory.units) for site_inventory in site.siteinventory_set.all()])
+            ["{} ({})".format(site_inventory.inventory.display_name, site_inventory.units) for site_inventory in
+             site.siteinventory_set.all()])
 
 
 @admin.register(Subject)
@@ -403,5 +466,6 @@ class TechnologyCategoryAdmin(SuperuserOnlyAdmin, ImportExportModelAdmin):
 
     def items(self, category: TechnologyCategory):
         return ", ".join([str(item.units) + " " + item.display_name for item in category.inventoryitem_set.all()])
+
 
 admin.site.unregister(Group)
