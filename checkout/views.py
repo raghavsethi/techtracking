@@ -200,6 +200,9 @@ def reserve_request(request):
         category = TechnologyCategory.objects.get(pk=request.GET['technology_category'])
         category_inventory = get_available_inventory(user.site, category, request_date)
         selected_item = pick_inventory(category_inventory, selected_period)
+        if not selected_item:
+            logger.warning("No item could be selected for technology category %s in %s at site %s on date %s", category,
+                           selected_period, user.site, request_date)
         item_inventory = category_inventory[selected_item]
     else:
         return error_redirect(request, "Reservation request must contain site inventory or category")

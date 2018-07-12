@@ -81,6 +81,10 @@ body {
     background-color: #e6efe3;
 }
 
+.pill-unavailable {
+    background-color: #ebc0b8;
+}
+
 .pill-reserved {
     background-color: #eaeaea;
 }

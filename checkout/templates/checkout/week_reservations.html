@@ -14,25 +14,29 @@
       <div class="col-xs-12">
         {% for category, free_count in period_details.free.items %}
           <div class="row">
-            <div class="col-xs-12">
+          <div class="col-xs-12">
+            {% if free_count > 0 %}
               <div class="pill-container pill-available">
                 <a href="{% url 'reserve_request' %}?technology_category={{ category.pk }}&date={{ work_day.date.isoformat }}&period={{ period.id }}">
                   <div class="pill">
-                    {% if free_count > 0 %}
-                      <span class="label label-success inventory-room">Free</span>
-                      <span class="label label-default inventory-units">{{ free_count }}</span>
-                      <small>{{ category.name }}</small>
-                    {% else %}
-                      <span class="label label-danger inventory-room">N/A</span>
-                      <span class="label label-default inventory-units">{{ free_count }}</span>
-                      <small>{{ category.name }}</small>
-                    {% endif %}
+                    <span class="label label-success inventory-room">Free</span>
+                    <span class="label label-default inventory-units">{{ free_count }}</span>
+                    <small>{{ category.name }}</small>
                   </div>
                 </a>
               </div>
-            </div>
+            {% else %}
+              <div class="pill-container pill-unavailable">
+                <div class="pill">
+                  <span class="label label-danger inventory-room">N/A</span>
+                  <span class="label label-default inventory-units">{{ free_count }}</span>
+                  <small>{{ category.name }}</small>
+                </div>
+              </div>
+            {% endif %}
           </div>
         {% endfor %}
+        </div>
       </div>
     </div>
     <hr class="small-margin-bottom"/>
