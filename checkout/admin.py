@@ -232,7 +232,7 @@ class SiteInventoryAdmin(SuperuserOnlyAdmin):
                                                 "requested: {}".format(count, ", ".join(affected_links))),
                                       level=messages.WARNING)
 
-            super().save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super(SiteInventoryAdmin, self).get_queryset(request)
