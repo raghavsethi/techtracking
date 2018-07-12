@@ -88,8 +88,8 @@ def render_schedule(request, week: Week):
     for day in working_days:
         schedule.append(ReservationSchedule(site, day))
 
-    previous_week: Week = (site.week_set.filter(week_number=week.week_number - 1).first(),)
-    next_week: Week = (site.week_set.filter(week_number=week.week_number + 1).first(),)
+    previous_week = (site.week_set.filter(week_number=week.week_number - 1).first(),)
+    next_week = (site.week_set.filter(week_number=week.week_number + 1).first(),)
 
     if previous_week[0]:
         previous_week = (previous_week[0], reverse('schedule', args=[previous_week[0].week_number]))
@@ -360,8 +360,8 @@ def render_movements(request, week: Week):
     for day in working_days:
         schedule.append(MovementSchedule(site, day))
 
-    previous_week: Week = (site.week_set.filter(week_number=week.week_number - 1).first(),)
-    next_week: Week = (site.week_set.filter(week_number=week.week_number + 1).first(),)
+    previous_week = (site.week_set.filter(week_number=week.week_number - 1).first(),)
+    next_week = (site.week_set.filter(week_number=week.week_number + 1).first(),)
 
     if previous_week[0]:
         previous_week = (previous_week[0], reverse('movements', args=[previous_week[0].week_number]))
