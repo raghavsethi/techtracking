@@ -111,7 +111,6 @@ def render_schedule(request, week: Week):
 
 def get_available_inventory(site: Site, category: TechnologyCategory, request_date: date) -> \
         Dict[SiteInventory, Dict[Period, int]]:
-
     reservations: List[Reservation] = list(Reservation.objects.filter(
         site_inventory__inventory__type=category, site_inventory__site=site, date=request_date))
     category_inventory: List[SiteInventory] = list(site.siteinventory_set.filter(inventory__type=category))
@@ -174,7 +173,8 @@ def render_reservation_request(request, request_date, selected_period, selected_
     context = {
         "sites": Site.objects.all(),
         "selected_item": selected_item,
-        "category_items": [item for item in site.siteinventory_set.filter(inventory__type=category) if item != selected_item],
+        "category_items": [item for item in site.siteinventory_set.filter(inventory__type=category) if
+                           item != selected_item],
         "request_date": request_date,
         "teams": teams,
         "selected_period": selected_period,
@@ -237,7 +237,8 @@ def reserve(request):
     classroom: Classroom = Classroom.objects.get(pk=request.POST['classroom'])
 
     if requested_units < 1:
-        return error_redirect(request, "You must request at least 1 unit of {}".format(site_inventory.inventory.display_name))
+        return error_redirect(request,
+                              "You must request at least 1 unit of {}".format(site_inventory.inventory.display_name))
 
     # First, validate all the reservations
     for period in selected_periods:
@@ -273,7 +274,8 @@ def reserve(request):
         except IntegrityError:
             return error_redirect(request, "Failed to make reservation - another reservation by this team for {} "
                                            "in {} during {} already exists. Please delete the existing reservation and "
-                                           "try again".format(site_inventory.inventory.display_name, classroom.name, period.name))
+                                           "try again".format(site_inventory.inventory.display_name, classroom.name,
+                                                              period.name))
 
         reserved_periods.append(period.name)
 
