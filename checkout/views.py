@@ -123,7 +123,8 @@ def get_available_inventory(site: Site, category: TechnologyCategory, request_da
             free_units[inventory][period] = inventory.units
 
     for existing_reservation in reservations:
-        free_units[existing_reservation.site_inventory][existing_reservation.period] -= existing_reservation.units
+        free_units[existing_reservation.site_inventory][existing_reservation.period] = max(0, free_units[
+            existing_reservation.site_inventory][existing_reservation.period] - existing_reservation.units)
 
     return free_units
 

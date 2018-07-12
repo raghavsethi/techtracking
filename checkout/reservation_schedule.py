@@ -24,15 +24,15 @@ class ReservationSchedule:
 
         for period in periods:
             reservations = []
-            period_grouped_inventory = grouped_inventory_totals.copy()
+            period_inventory = grouped_inventory_totals.copy()
             for category in grouped_inventory.keys():
                 for site_inventory in grouped_inventory[category]:
                     for assignment in assignments:
                         if assignment.period == period and assignment.site_inventory == site_inventory:
                             reservations.append(assignment)
-                            period_grouped_inventory[category] -= assignment.units
+                            period_inventory[category] = max(0, period_inventory[category] - assignment.units)
 
-            self.periods.append(PeriodInfo(period, period_grouped_inventory, reservations))
+            self.periods.append(PeriodInfo(period, period_inventory, reservations))
 
     def print(self):
         for period in self.periods:
