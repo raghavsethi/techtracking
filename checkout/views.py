@@ -1,6 +1,6 @@
 import csv
 import logging
-from typing import Dict, Tuple
+from typing import Dict
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -12,7 +12,7 @@ from django.urls import reverse
 from checkout.models import *
 from checkout.movement_schedule import MovementSchedule, get_movement_periods
 from checkout.reservation_schedule import ReservationSchedule
-from checkout.utils import error_redirect, success_redirect
+from techtracking.error_utils import error_redirect, success_redirect, require_http_post
 
 logger = logging.getLogger(__name__)
 
@@ -213,6 +213,7 @@ def reserve_request(request):
 
 @login_required
 @transaction.atomic
+@require_http_post
 def reserve(request):
     user: User = request.user
     request_date = datetime.strptime(request.POST['request_date'], '%Y-%m-%d').date()
@@ -382,6 +383,7 @@ def render_movements(request, week: Week):
 
 
 @login_required
+@require_http_post
 def delete(request):
     reservation: Reservation = get_object_or_404(Reservation, pk=request.POST['reservation_pk'])
 
@@ -450,6 +452,7 @@ def export(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
+@require_http_post
 def change_site(request):
     user: User = request.user
     site: Site = get_object_or_404(Site, pk=request.POST['site_pk'])
