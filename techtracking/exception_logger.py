@@ -14,7 +14,7 @@ class ExceptionLoggingMiddleware:
     def process_exception(self, request: HttpRequest, exception):
         self.logger.error("Exception occurred. Context:")
         self.logger.error("\tUser: %s", request.user)
-        self.logger.error("\tPath: %s", request.get_full_path())
+        self.logger.error("\tPath: %s", request.method + request.get_full_path())
         self.logger.error("\tReferrer: %s", request.META.get("HTTP_REFERER"))
         self.logger.error("\tUser-agent: %s", request.META.get("HTTP_USER_AGENT"))
         self.logger.error("\tGET Params: %s", dict(request.GET))
