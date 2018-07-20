@@ -204,6 +204,9 @@ def reserve_request(request):
         if not selected_item:
             logger.warning("No item could be selected for technology category %s in %s at site %s on date %s", category,
                            selected_period, user.site, request_date)
+            logger.warning("Available: %s", category_inventory)
+            return error_redirect(request, "This type of item is no longer available, please try again.")
+
         item_inventory = category_inventory[selected_item]
     else:
         return error_redirect(request, "Reservation request must contain site inventory or category")
