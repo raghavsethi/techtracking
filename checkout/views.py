@@ -170,6 +170,11 @@ def render_reservation_request(request, request_date, selected_period, selected_
         new_team.save()
         teams = [new_team]
 
+    classrooms: List[Classroom] = list(Classroom.objects.filter(site=selected_item.site))
+    if len(classrooms) == 0:
+        return error_redirect(request, "No classrooms have been set up at {}. Please contact your site director or "
+                                       "administrator".format(site.name))
+
     context = {
         "sites": Site.objects.all(),
         "selected_item": selected_item,
@@ -179,7 +184,7 @@ def render_reservation_request(request, request_date, selected_period, selected_
         "teams": teams,
         "selected_period": selected_period,
         "free_units": item_inventory,
-        "classrooms": Classroom.objects.filter(site=selected_item.site),
+        "classrooms": classrooms,
         "purpose_list": UsagePurpose.objects.all(),
     }
     return render(request, "checkout/request.html", context)
