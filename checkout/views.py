@@ -1,11 +1,10 @@
-import csv
 import logging
 from typing import Dict
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction, IntegrityError
-from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseNotFound, HttpResponseBadRequest, StreamingHttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
@@ -418,45 +417,53 @@ def delete(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def export(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="reservations.csv"'
+    def generate_csv_output():
+        yield ','.join([
+            'Site', 'User', 'Teaching Team', 'Subject', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU',
+            'Purpose', 'Collaborative', 'Total Teams at Site']) + '\n'
 
-    writer = csv.writer(response)
-    writer.writerow([
-        'Site', 'User', 'Teaching Team', 'Subject', 'Classroom', 'Date', 'Week', 'Period', 'Units', 'Type', 'SKU',
-        'Purpose', 'Collaborative', 'Total Teams at Site'])
+        # Cache for performance, otherwise server timeouts can happen
+        site_teams: Dict[Site, int] = {}
+        site_weeks: Dict[Site, List[Week]] = {}
+        team_members: Dict[Team, List[User]] = {}
+        siteinventory_inventory: Dict[SiteInventory, InventoryItem] = {}
 
-    site_teams: Dict[Site, int] = {}
-    for reservation in Reservation.objects.all():
-        site: Site = reservation.site_inventory.site
+        for reservation in Reservation.objects.all():
+            site: Site = reservation.site_inventory.site
 
-        weeks: List[Week] = site.week_set.all()
-        week_number = 0
-        for week in weeks:
-            if reservation.date in week.days():
-                week_number = week.week_number
+            if site not in site_weeks:
+                site_weeks[site] = site.week_set.all()
+            if site not in site_teams:
+                site_teams[site] = len(site.team_set.all())
+            if reservation.team not in team_members:
+                team_members[reservation.team] = reservation.team.members.all()
+            if reservation.site_inventory not in siteinventory_inventory:
+                siteinventory_inventory[reservation.site_inventory] = reservation.site_inventory.inventory
 
-        if site not in site_teams:
-            site_teams[site] = len(site.team_set.all())
+            weeks: List[Week] = site_weeks[site]
+            week_number = 0
+            for week in weeks:
+                if reservation.date in week.days():
+                    week_number = week.week_number
 
-        writer.writerow([
-            site.name,
-            reservation.creator.name + " (" + reservation.creator.email + ")",
-            ", ".join([member.name for member in reservation.team.members.all()]),
-            reservation.team.subject,
-            reservation.classroom.name,
-            reservation.date,
-            week_number,
-            reservation.period.number,
-            reservation.units,
-            reservation.site_inventory.inventory.type.name,
-            reservation.site_inventory.inventory.display_name,
-            reservation.purpose.purpose,
-            1 if reservation.collaborative else 0,
-            site_teams[site]
-        ])
+            yield ','.join([str(cell) for cell in [
+                site.name,
+                reservation.creator.name + " (" + reservation.creator.email + ")",
+                ", ".join([member.name for member in team_members[reservation.team]]),
+                reservation.team.subject.name,
+                reservation.classroom.name,
+                reservation.date,
+                week_number,
+                reservation.period.number,
+                reservation.units,
+                siteinventory_inventory[reservation.site_inventory].type.name,
+                siteinventory_inventory[reservation.site_inventory].display_name,
+                reservation.purpose.purpose if reservation.purpose else UsagePurpose.OTHER_PURPOSE,
+                1 if reservation.collaborative else 0,
+                site_teams[site]
+            ]]) + '\n'
 
-    return response
+    return StreamingHttpResponse(generate_csv_output(), status=200, content_type='text/csv')
 
 
 @user_passes_test(lambda u: u.is_superuser)
