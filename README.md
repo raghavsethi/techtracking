@@ -184,3 +184,14 @@ If you do *not* want to save your changes:
 git reset --hard HEAD
 ```
 Now you can try rebasing again
+
+
+## Deploying new versions
+
+* [Install](https://devcenter.heroku.com/articles/heroku-cli) the Heroku CLI if you haven't already
+* Commit your changes to master
+* Push to master
+* Push to Heroku
+```commandline
+git push heroku master
+```
