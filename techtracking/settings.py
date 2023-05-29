@@ -173,6 +173,7 @@ SESSION_COOKIE_AGE = 3628800  # 6 weeks
 # Email
 
 SERVER_EMAIL = 'checkout.help@aimhigh.org'
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # Transactional email
 
