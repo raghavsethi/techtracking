@@ -195,3 +195,23 @@ Now you can try rebasing again
 ```commandline
 git push heroku master
 ```
+
+## Documentation for common operations
+
+### Summer set-up
+1. Make sure Twilio is upgraded to first-level paid plan
+2. Make sure Postgres is upgraded to first paid plan that offers caching
+
+### Summer wind-down
+1. Export data for analysis
+2. Downgrade/remove Twilio
+2. Downgrade/remove paid Postgres instance
+
+### Moving Postgres instances on Heroku
+
+```commandline
+heroku maintenance:on -a <appname>
+heroku pg:copy DATABASE_URL <target_database_url> -a <appname>
+heroku pg:promote <target_database_url> -a <appname>
+heroku maintenance:off -a <appname>
+```
